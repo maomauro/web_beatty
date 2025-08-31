@@ -1,90 +1,74 @@
-import { Button } from '../ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { LogOut, ShoppingCart, Heart } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "../ui/dialog";
+import { Button } from "../ui/button";
+import { LogOut, X } from "lucide-react";
 
 interface LogoutConfirmModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
-  cartItemCount: number;
-  favoritesCount: number;
+  userName?: string;
 }
 
 export function LogoutConfirmModal({ 
   isOpen, 
   onClose, 
   onConfirm, 
-  cartItemCount, 
-  favoritesCount 
+  userName 
 }: LogoutConfirmModalProps) {
-  if (!isOpen) return null;
-
   return (
-    <>
-      {/* Overlay */}
-      <div
-        className="fixed inset-0 bg-black/50 z-[60]"
-        onClick={onClose}
-      />
+         <Dialog open={isOpen} onOpenChange={onClose}>
+       <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-lg">
+            <LogOut className="h-5 w-5 text-orange-500" />
+            Confirmar Cierre de Sesión
+          </DialogTitle>
+        </DialogHeader>
+        <DialogDescription className="text-gray-600">
+          ¿Estás seguro de que quieres cerrar tu sesión?
+        </DialogDescription>
 
-      {/* Modal */}
-      <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <div className="mx-auto mb-4 w-12 h-12 bg-destructive/10 rounded-full flex items-center justify-center">
-              <LogOut className="h-6 w-6 text-destructive" />
-            </div>
-            <CardTitle className="text-xl">¿Cerrar Sesión?</CardTitle>
-          </CardHeader>
-          
-          <CardContent className="space-y-4">
-            <div className="text-center text-muted-foreground">
-              <p className="mb-4">
-                ¿Estás seguro de que quieres cerrar tu sesión?
+        <div className="space-y-4">
+          {userName && (
+            <div className="bg-blue-50 p-3 rounded-lg">
+              <p className="text-sm text-blue-800">
+                <strong>Usuario actual:</strong> {userName}
               </p>
-              
-              {/* Información sobre datos */}
-              <div className="space-y-3 text-sm">
-                {cartItemCount > 0 && (
-                  <div className="flex items-center justify-center space-x-2 text-amber-600">
-                    <ShoppingCart className="h-4 w-4" />
-                    <span>
-                      <strong>{cartItemCount}</strong> producto{cartItemCount > 1 ? 's' : ''} en tu carrito se perderán
-                    </span>
-                  </div>
-                )}
-                
-                {favoritesCount > 0 && (
-                  <div className="flex items-center justify-center space-x-2 text-green-600">
-                    <Heart className="h-4 w-4" />
-                    <span>
-                      <strong>{favoritesCount}</strong> favorito{favoritesCount > 1 ? 's' : ''} se mantendrán
-                    </span>
-                  </div>
-                )}
-              </div>
             </div>
+          )}
 
-            {/* Botones */}
-            <div className="flex space-x-3 pt-4">
-              <Button
-                variant="outline"
-                onClick={onClose}
-                className="flex-1"
-              >
-                Cancelar
-              </Button>
-              <Button
-                onClick={onConfirm}
-                className="flex-1 bg-destructive hover:bg-destructive/90"
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Cerrar Sesión
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </>
+          <div className="bg-yellow-50 p-3 rounded-lg">
+            <p className="text-sm text-yellow-800">
+              <strong>⚠️ Importante:</strong> Al cerrar sesión perderás acceso a:
+            </p>
+            <ul className="text-sm text-yellow-700 mt-2 space-y-1">
+              <li>• Tu carrito de compras</li>
+              <li>• Tus productos favoritos</li>
+              <li>• Tu historial de compras</li>
+              <li>• Tu perfil personalizado</li>
+            </ul>
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <Button
+              variant="outline"
+              onClick={onClose}
+              className="flex-1"
+            >
+              <X className="h-4 w-4 mr-2" />
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={onConfirm}
+              className="flex-1"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Cerrar Sesión
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

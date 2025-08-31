@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
 import { CartItemUI } from '../../types';
 import { ShoppingCart, CreditCard, Truck, CheckCircle, AlertCircle } from 'lucide-react';
 import { ThankYouModal } from './ThankYouModal';
@@ -50,6 +50,9 @@ export function CheckoutConfirmModal({
             <span>Confirmar Compra</span>
           </DialogTitle>
         </DialogHeader>
+        <DialogDescription className="sr-only">
+          Revisa los detalles de tu compra antes de confirmar
+        </DialogDescription>
 
         <div className="space-y-6">
           {/* Resumen de productos */}

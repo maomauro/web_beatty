@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -10,7 +10,7 @@ from config import settings
 SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = settings.ALGORITHM
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
-REFRESH_TOKEN_EXPIRE_DAYS = 7     # 7 días
+REFRESH_TOKEN_EXPIRE_MINUTES = 30  # 30 minutos máximo (sesión total)
 
 # Contexto para hashing de contraseñas
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -33,9 +33,9 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     """Crea un token de acceso JWT"""
     to_encode = data.copy()
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     
     to_encode.update({"exp": expire, "type": "access"})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
@@ -44,7 +44,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
 def create_refresh_token(data: dict) -> str:
     """Crea un token de refresh JWT"""
     to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+    expire = datetime.now(timezone.utc) + timedelta(minutes=REFRESH_TOKEN_EXPIRE_MINUTES)
     
     to_encode.update({"exp": expire, "type": "refresh"})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
@@ -53,7 +53,7 @@ def create_refresh_token(data: dict) -> str:
     refresh_tokens[encoded_jwt] = {
         "user_id": data.get("user_id"),
         "email": data.get("email"),
-        "created_at": datetime.utcnow()
+        "created_at": datetime.now(timezone.utc)
     }
     
     return encoded_jwt
@@ -78,7 +78,7 @@ def verify_token(token: str, token_type: str = "access") -> Dict[str, Any]:
                 detail="Token expirado"
             )
         
-        if datetime.utcnow() > datetime.utcfromtimestamp(exp):
+        if datetime.now(timezone.utc) > datetime.fromtimestamp(exp, tz=timezone.utc):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Token expirado"
@@ -137,12 +137,12 @@ def revoke_refresh_token(refresh_token: str) -> bool:
 
 def cleanup_expired_refresh_tokens():
     """Limpia refresh tokens expirados de la memoria"""
-    current_time = datetime.utcnow()
+    current_time = datetime.now(timezone.utc)
     expired_tokens = []
     
     for token, data in refresh_tokens.items():
         created_at = data.get("created_at")
-        if created_at and (current_time - created_at).days > REFRESH_TOKEN_EXPIRE_DAYS:
+        if created_at and (current_time - created_at).total_seconds() > (REFRESH_TOKEN_EXPIRE_MINUTES * 60):
             expired_tokens.append(token)
     
     for token in expired_tokens:

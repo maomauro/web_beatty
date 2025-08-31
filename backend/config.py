@@ -10,7 +10,8 @@ class Settings:
     # Security
     SECRET_KEY: str = os.getenv("SECRET_KEY", "tu_clave_secreta")
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15  # 15 minutos
+    # Access Token: 15 min, Refresh Token: 30 min
     
     # CORS
     CORS_ORIGINS: list = ["http://localhost:3000", "http://127.0.0.1:3000", "*"]

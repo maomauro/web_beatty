@@ -2,6 +2,8 @@ import { Link } from 'react-router-dom';
 import { Button } from '../ui/button';
 import { ShoppingCart, User, Heart, Menu, LogOut, Settings, Store } from 'lucide-react';
 import { useAuthContext } from '../../contexts/AuthContext';
+import { useState } from 'react';
+import { LogoutConfirmModal } from '../modals/LogoutConfirmModal';
 
 interface HeaderProps {
   onAuthClick: () => void;
@@ -13,12 +15,14 @@ interface HeaderProps {
 
 export function Header({ onAuthClick, onCartClick, onFavoritesClick, cartItemCount, favoritesCount }: HeaderProps) {
   const { user: currentUser, logout, isAuthenticated } = useAuthContext();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   // Si el usuario es administrador o publicador, mostrar header simplificado
   if (currentUser?.profile === 'Administrador' || currentUser?.profile === 'Publicador') {
     return (
-      <header className={`sticky top-0 z-50 w-full border-b text-white ${
-        currentUser?.profile === 'Administrador' ? 'bg-blue-600' : 'bg-green-600'
-      }`}>
+      <>
+        <header className={`sticky top-0 z-50 w-full border-b text-white ${
+          currentUser?.profile === 'Administrador' ? 'bg-blue-600' : 'bg-green-600'
+        }`}>
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center justify-between">
             {/* Logo y título administrativo/publicador */}
@@ -57,7 +61,7 @@ export function Header({ onAuthClick, onCartClick, onFavoritesClick, cartItemCou
               <Button 
                 variant="ghost" 
                 size="icon" 
-                onClick={logout}
+                onClick={() => setShowLogoutModal(true)}
                 className={`text-white ${
                   currentUser?.profile === 'Administrador' ? 'hover:bg-blue-700' : 'hover:bg-green-700'
                 }`}
@@ -66,15 +70,28 @@ export function Header({ onAuthClick, onCartClick, onFavoritesClick, cartItemCou
                 <LogOut className="h-5 w-5" />
               </Button>
             </div>
-          </div>
-        </div>
-      </header>
-    );
-  }
+                  </div>
+      </div>
+    </header>
+
+    {/* Modal de confirmación de logout */}
+    <LogoutConfirmModal
+      isOpen={showLogoutModal}
+      onClose={() => setShowLogoutModal(false)}
+      onConfirm={async () => {
+        await logout();
+        setShowLogoutModal(false);
+      }}
+      userName={currentUser?.person_name}
+    />
+  </>
+  );
+}
 
   // Header normal para usuarios no administradores
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <>
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
@@ -147,7 +164,7 @@ export function Header({ onAuthClick, onCartClick, onFavoritesClick, cartItemCou
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  onClick={logout}
+                  onClick={() => setShowLogoutModal(true)}
                   className="text-destructive hover:text-destructive"
                   title="Cerrar Sesión"
                 >
@@ -170,5 +187,17 @@ export function Header({ onAuthClick, onCartClick, onFavoritesClick, cartItemCou
         </div>
       </div>
     </header>
+
+    {/* Modal de confirmación de logout */}
+    <LogoutConfirmModal
+      isOpen={showLogoutModal}
+      onClose={() => setShowLogoutModal(false)}
+      onConfirm={async () => {
+        await logout();
+        setShowLogoutModal(false);
+      }}
+      userName={currentUser?.person_name}
+    />
+  </>
   );
 }

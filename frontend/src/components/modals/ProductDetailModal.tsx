@@ -15,11 +15,11 @@ interface ProductDetailModalProps {
   onAuthPrompt: (action: 'favorites' | 'cart') => void;
 }
 
-export function ProductDetailModal({ 
-  product, 
-  onClose, 
-  onAddToCart, 
-  isFavorite, 
+export function ProductDetailModal({
+  product,
+  onClose,
+  onAddToCart,
+  isFavorite,
   onToggleFavorite,
   currentUser,
   onAuthPrompt
@@ -29,7 +29,6 @@ export function ProductDetailModal({
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
   if (!product) return null;
-
 
 
   const handleAddToCart = () => {
@@ -49,8 +48,8 @@ export function ProductDetailModal({
   };
 
   // Obtener todas las imágenes del producto
-  const allImages = product.imageGallery && product.imageGallery.length > 0 
-    ? product.imageGallery 
+  const allImages = product.imageGallery && product.imageGallery.length > 0
+    ? product.imageGallery
     : [product.image];
 
   // Navegar entre imágenes
@@ -76,10 +75,10 @@ export function ProductDetailModal({
             <DialogTitle>
               Detalle del Producto
             </DialogTitle>
-            <DialogDescription>
-              Información completa del producto {product.name}
-            </DialogDescription>
           </DialogHeader>
+          <DialogDescription>
+            Información completa del producto {product.name}
+          </DialogDescription>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Imagen del producto */}
@@ -91,7 +90,7 @@ export function ProductDetailModal({
                   className="w-full h-96 object-cover rounded-lg cursor-pointer"
                   onClick={() => openImageModal(selectedImageIndex)}
                 />
-                
+
                 {/* Botones de navegación si hay más de una imagen */}
                 {allImages.length > 1 && (
                   <>
@@ -126,12 +125,11 @@ export function ProductDetailModal({
                     }
                   }}
                 >
-                  <Heart 
-                    className={`h-6 w-6 ${
-                      isFavorite 
-                        ? 'fill-red-500 text-red-500' 
+                  <Heart
+                    className={`h-6 w-6 ${isFavorite
+                        ? 'fill-red-500 text-red-500'
                         : 'text-muted-foreground'
-                    }`} 
+                      }`}
                   />
                 </Button>
                 {product.isOnSale && (
@@ -146,11 +144,10 @@ export function ProductDetailModal({
                 {allImages.map((imageUrl, index) => (
                   <div
                     key={index}
-                    className={`w-16 h-16 bg-muted rounded-md cursor-pointer hover:opacity-80 transition-opacity border-2 ${
-                      index === selectedImageIndex 
-                        ? 'border-primary' 
+                    className={`w-16 h-16 bg-muted rounded-md cursor-pointer hover:opacity-80 transition-opacity border-2 ${index === selectedImageIndex
+                        ? 'border-primary'
                         : 'border-transparent hover:border-primary'
-                    }`}
+                      }`}
                     onClick={() => setSelectedImageIndex(index)}
                   >
                     <img
@@ -311,8 +308,8 @@ export function ProductDetailModal({
                 </div>
 
                 <div className="flex space-x-3">
-                  <Button 
-                    className="flex-1" 
+                  <Button
+                    className="flex-1"
                     size="lg"
                     onClick={() => {
                       if (currentUser) {
@@ -327,8 +324,8 @@ export function ProductDetailModal({
                     <ShoppingCart className="h-5 w-5 mr-2" />
                     {product.stock === 0 ? 'Sin Stock' : `Agregar ${quantity} al Carrito - $${totalPrice.toLocaleString()}`}
                   </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="lg"
                     onClick={() => {
                       if (currentUser) {
@@ -339,12 +336,11 @@ export function ProductDetailModal({
                       }
                     }}
                   >
-                    <Heart 
-                      className={`h-5 w-5 ${
-                        isFavorite 
-                          ? 'fill-red-500 text-red-500' 
+                    <Heart
+                      className={`h-5 w-5 ${isFavorite
+                          ? 'fill-red-500 text-red-500'
                           : ''
-                      }`} 
+                        }`}
                     />
                   </Button>
                 </div>
@@ -371,24 +367,22 @@ export function ProductDetailModal({
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Stock:</span>
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${
-                      product.stock > 10 
-                        ? 'bg-green-100 text-green-800' 
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${product.stock > 10
+                        ? 'bg-green-100 text-green-800'
                         : product.stock > 0
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : 'bg-red-100 text-red-800'
-                    }`}>
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : 'bg-red-100 text-red-800'
+                      }`}>
                       {product.stock > 10 ? 'Disponible' : product.stock > 0 ? 'Pocas unidades' : 'Agotado'}
                     </span>
                   </div>
                   {product.id_iva && (
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground">Tipo de IVA:</span>
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${
-                        product.id_iva === 1 
-                          ? 'bg-green-100 text-green-800' 
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${product.id_iva === 1
+                          ? 'bg-green-100 text-green-800'
                           : 'bg-blue-100 text-blue-800'
-                      }`}>
+                        }`}>
                         {product.id_iva === 1 ? 'Sin IVA' : product.ivaPorcentaje ? `IVA ${product.ivaPorcentaje}%` : 'Con IVA'}
                       </span>
                     </div>
@@ -403,6 +397,14 @@ export function ProductDetailModal({
       {/* Modal de imagen ampliada */}
       <Dialog open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] p-0 bg-black/95">
+          <DialogHeader className="sr-only">
+            <DialogTitle>
+              Vista ampliada de {product.name}
+            </DialogTitle>
+          </DialogHeader>
+          <DialogDescription className="sr-only">
+            Vista ampliada de la imagen del producto {product.name}
+          </DialogDescription>
           <div className="relative w-full h-full">
             {/* Botón cerrar */}
             <Button
@@ -414,14 +416,14 @@ export function ProductDetailModal({
               <X className="h-6 w-6" />
             </Button>
 
-                         {/* Imagen ampliada */}
-             <div className="flex items-center justify-center h-full p-12">
-               <img
-                 src={allImages[selectedImageIndex]}
-                 alt={product.name}
-                 className="max-w-[85%] max-h-[85%] object-contain"
-               />
-             </div>
+            {/* Imagen ampliada */}
+            <div className="flex items-center justify-center h-full p-12">
+              <img
+                src={allImages[selectedImageIndex]}
+                alt={product.name}
+                className="max-w-[85%] max-h-[85%] object-contain"
+              />
+            </div>
 
             {/* Botones de navegación */}
             {allImages.length > 1 && (

@@ -1,5 +1,5 @@
 import { Button } from '../ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
 import { Heart, Home, CheckCircle } from 'lucide-react';
 
 interface ThankYouModalProps {
@@ -17,12 +17,15 @@ export function ThankYouModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-                 <DialogHeader>
-           <DialogTitle className="flex items-center space-x-2 text-center justify-center">
-             <CheckCircle className="h-6 w-6 text-green-600" />
-             <span className="text-xl">Compra realizada</span>
-           </DialogTitle>
-         </DialogHeader>
+                         <DialogHeader>
+          <DialogTitle className="flex items-center space-x-2 text-center justify-center">
+            <CheckCircle className="h-6 w-6 text-green-600" />
+            <span className="text-xl">Compra realizada</span>
+          </DialogTitle>
+        </DialogHeader>
+        <DialogDescription className="sr-only">
+          Tu compra ha sido procesada exitosamente
+        </DialogDescription>
 
         <div className="space-y-6">
           {/* Mensaje principal */}

@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
 import { Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 import { useAuthContext } from '../contexts/AuthContext';
 
@@ -112,6 +112,9 @@ export function AuthPage({ isOpen, onClose }: AuthPageProps) {
             {isLogin ? 'Iniciar Sesión' : 'Crear Cuenta'}
           </DialogTitle>
         </DialogHeader>
+        <DialogDescription className="sr-only">
+          {isLogin ? 'Formulario para iniciar sesión en tu cuenta' : 'Formulario para crear una nueva cuenta'}
+        </DialogDescription>
 
         <div className="space-y-4">
           {/* Toggle Login/Register */}
