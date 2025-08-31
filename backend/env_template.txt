@@ -1,0 +1,14 @@
+# Configuración local para desarrollo
+# Copiar este archivo como .env en producción
+
+# Configuración de Base de Datos
+DATABASE_URL=mysql://desarrollo:desarrollo@localhost:3306/web_beatty
+
+# Configuración de Seguridad
+SECRET_KEY=tu_clave_secreta_super_segura_aqui_2024_web_beatty_system
+
+# Configuración de Debug
+DEBUG=True
+
+# Configuración de CORS
+CORS_ORIGINS=["http://localhost:3000"]
