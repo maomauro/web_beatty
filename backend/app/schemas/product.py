@@ -47,6 +47,8 @@ class ProductoDetailResponse(ProductoResponse):
     subcategoria_nombre: Optional[str] = None
     iva_porcentaje: Optional[Decimal] = None
     iva_descripcion: Optional[str] = None
+    imagen_principal: Optional[str] = None
+    imagen_galeria: Optional[List[str]] = None
     
     class Config:
         from_attributes = True

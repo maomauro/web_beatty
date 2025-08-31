@@ -42,6 +42,7 @@ import { useAuthContext } from './contexts/AuthContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { queryClient } from './lib/react-query';
 import { ProtectedRoute } from './components/common/ProtectedRoute';
+import { useProducts } from './hooks/useProducts';
 
 function AppContent() {
   const { user: currentUser, isAuthenticated } = useAuthContext();
@@ -100,7 +101,15 @@ function AppContent() {
     favoritesCount 
   } = useFavorites();
 
-  // Mock data para demostración
+  // Obtener productos reales del backend
+  const { data: products = [], isLoading: productsLoading, error: productsError } = useProducts();
+  
+  // Mostrar error si hay problemas cargando productos
+  if (productsError) {
+    console.error('Error loading products:', productsError);
+  }
+
+  // Mock data para demostración (fallback)
   const mockProducts: ProductoUI[] = [
     {
       id: "1",
@@ -117,6 +126,7 @@ function AppContent() {
       gender: "Unisex",
       description: "Shampoo reparador intensivo que restaura la fibra capilar dañada.",
       isOnSale: true,
+      id_iva: 1,
     },
     {
       id: "2",
@@ -131,6 +141,7 @@ function AppContent() {
       brand: "Nivea",
       gender: "Unisex",
       description: "Crema hidratante de larga duración para todo tipo de piel.",
+      id_iva: 1,
     },
     {
       id: "3",
@@ -145,8 +156,12 @@ function AppContent() {
       brand: "Rexona",
       gender: "Masculino",
       description: "Desodorante de larga duración con protección 48 horas.",
+      id_iva: 1,
     },
   ];
+
+  // Usar productos reales del backend, o mockProducts como fallback
+  const displayProducts = products.length > 0 ? products : mockProducts;
 
   const handleAddToCart = (product: ProductoUI) => {
     const existingItem = cartItems.find(item => item.id === product.id);
@@ -219,34 +234,36 @@ function AppContent() {
         <Routes>
           <Route 
             path="/" 
-            element={
-              <HomePage
-                products={mockProducts}
-                onAddToCart={handleAddToCart}
-                onToggleFavorite={handleToggleFavorite}
-                isFavorite={isFavorite}
-                onProductClick={setSelectedProduct}
-                currentUser={convertUserDataToUserUI(currentUser)}
-                onAuthClick={() => setIsAuthOpen(true)}
-                onAuthPrompt={handleAuthPrompt}
-                onAboutClick={() => setIsAboutModalOpen(true)}
-              />
-            } 
+                          element={
+                <HomePage
+                  products={displayProducts}
+                  onAddToCart={handleAddToCart}
+                  onToggleFavorite={handleToggleFavorite}
+                  isFavorite={isFavorite}
+                  onProductClick={setSelectedProduct}
+                  currentUser={convertUserDataToUserUI(currentUser)}
+                  onAuthClick={() => setIsAuthOpen(true)}
+                  onAuthPrompt={handleAuthPrompt}
+                  onAboutClick={() => setIsAboutModalOpen(true)}
+                  isLoading={productsLoading}
+                  error={productsError?.message || null}
+                />
+              } 
           />
           <Route 
             path="/catalog" 
-            element={
-              <CatalogPage
-                products={mockProducts}
-                onAddToCart={handleAddToCart}
-                onToggleFavorite={handleToggleFavorite}
-                isFavorite={isFavorite}
-                onProductClick={setSelectedProduct}
-                currentUser={convertUserDataToUserUI(currentUser)}
-                onAuthClick={() => setIsAuthOpen(true)}
-                onAuthPrompt={handleAuthPrompt}
-              />
-            } 
+                          element={
+                <CatalogPage
+                  products={displayProducts}
+                  onAddToCart={handleAddToCart}
+                  onToggleFavorite={handleToggleFavorite}
+                  isFavorite={isFavorite}
+                  onProductClick={setSelectedProduct}
+                  currentUser={convertUserDataToUserUI(currentUser)}
+                  onAuthClick={() => setIsAuthOpen(true)}
+                  onAuthPrompt={handleAuthPrompt}
+                />
+              } 
           />
           <Route 
             path="/profile" 

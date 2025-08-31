@@ -32,6 +32,7 @@ export interface IVA {
   id_iva: number;
   porcentaje: number;
   descripcion: string;
+  nombre?: string;
 }
 
 export interface Categoria {
@@ -118,6 +119,12 @@ export interface ProductoUI {
   usage?: string;
   isNew?: boolean;
   isOnSale?: boolean;
+  id_iva?: number; // Agregado para filtrar productos por IVA
+  id_categoria?: number; // Agregado para filtros de categoría
+  id_subcategoria?: number; // Agregado para filtros de subcategoría
+  ivaPorcentaje?: number; // Nuevo: Porcentaje de IVA
+  ivaDescripcion?: string; // Nuevo: Descripción del IVA (ej. "IVA del 19%")
+  imageGallery?: string[]; // Nuevo: Galería de imágenes del producto
 }
 
 export interface CartItemUI {

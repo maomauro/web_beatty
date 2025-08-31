@@ -9,6 +9,70 @@ from ..utils.auth import get_current_user
 
 router = APIRouter(prefix="/api/subcategories", tags=["subcategories"])
 
+# ===== ENDPOINTS PÚBLICOS (SIN AUTENTICACIÓN) =====
+
+@router.get("/public", response_model=SubcategoriaDetailListResponse)
+def get_subcategorias_publicas(
+    skip: int = Query(0, ge=0, description="Número de registros a omitir"),
+    limit: int = Query(100, ge=1, le=1000, description="Número máximo de registros a retornar"),
+    categoria_id: int = Query(None, description="Filtrar por ID de categoría"),
+    db: Session = Depends(get_db)
+):
+    """
+    Obtener todas las subcategorías con paginación.
+    Siempre incluye detalles de categoría.
+    Opcionalmente filtrar por categoría.
+    NO requiere autenticación.
+    """
+    if categoria_id:
+        # Verificar que la categoría existe
+        categoria = crud_category.get_categoria_by_id(db, categoria_id)
+        if not categoria:
+            raise HTTPException(status_code=404, detail="Categoría no encontrada")
+        
+        subcategorias = crud_subcategory.get_subcategorias_by_categoria_with_details(db, categoria_id, skip=skip, limit=limit)
+        total = crud_subcategory.get_subcategorias_count_by_categoria(db, categoria_id)
+    else:
+        subcategorias = crud_subcategory.get_subcategorias_with_details(db, skip=skip, limit=limit)
+        total = crud_subcategory.get_subcategorias_count(db)
+    
+    # Convertir a respuesta con detalles
+    subcategorias_with_details = []
+    for subcategoria in subcategorias:
+        response_data = {
+            **subcategoria.__dict__,
+            "categoria_nombre": subcategoria.categoria.nombre if subcategoria.categoria else None
+        }
+        subcategorias_with_details.append(SubcategoriaDetailResponse(**response_data))
+    
+    return SubcategoriaDetailListResponse(
+        subcategorias=subcategorias_with_details,
+        total=total
+    )
+
+@router.get("/public/{subcategoria_id}", response_model=SubcategoriaDetailResponse)
+def get_subcategoria_publica(
+    subcategoria_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    Obtener una subcategoría específica por ID.
+    Siempre incluye detalles de categoría.
+    NO requiere autenticación.
+    """
+    subcategoria = crud_subcategory.get_subcategoria_by_id_with_details(db, subcategoria_id)
+    if not subcategoria:
+        raise HTTPException(status_code=404, detail="Subcategoría no encontrada")
+    
+    response_data = {
+        **subcategoria.__dict__,
+        "categoria_nombre": subcategoria.categoria.nombre if subcategoria.categoria else None
+    }
+    
+    return SubcategoriaDetailResponse(**response_data)
+
+# ===== ENDPOINTS PRIVADOS (CON AUTENTICACIÓN) =====
+
 @router.get("/", response_model=SubcategoriaDetailListResponse)
 def get_subcategorias(
     skip: int = Query(0, ge=0, description="Número de registros a omitir"),

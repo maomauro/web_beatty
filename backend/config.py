@@ -13,7 +13,7 @@ class Settings:
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
     # CORS
-    CORS_ORIGINS: list = ["http://localhost:3000"]
+    CORS_ORIGINS: list = ["http://localhost:3000", "http://127.0.0.1:3000", "*"]
     
     # Debug
     DEBUG: bool = os.getenv("DEBUG", "True").lower() == "true"

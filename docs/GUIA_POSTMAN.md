@@ -100,6 +100,226 @@ if (pm.response.code === 200) {
 
 ---
 
+## 🌐 ENDPOINTS PÚBLICOS (SIN AUTENTICACIÓN)
+
+> **Importante**: Estos endpoints NO requieren autenticación y están diseñados para que los clientes puedan consultar información sin necesidad de registrarse.
+
+### 📂 CATEGORÍAS PÚBLICAS
+
+#### 1. Listar Categorías Públicas
+- **Método**: `GET`
+- **URL**: `{{base_url}}/api/categories/public`
+- **Headers**: Ninguno requerido
+- **Query Params** (opcionales):
+  - `skip`: `0`
+  - `limit`: `10`
+- **Respuesta esperada**:
+```json
+{
+  "categorias": [
+    {
+      "id_categoria": 1,
+      "nombre": "Cuidado del Cabello",
+      "descripcion": "Productos para el cuidado del cabello"
+    },
+    {
+      "id_categoria": 2,
+      "nombre": "Cuidado de la Piel",
+      "descripcion": "Productos para el cuidado de la piel"
+    }
+  ],
+  "total": 2
+}
+```
+
+#### 2. Obtener Categoría Pública por ID
+- **Método**: `GET`
+- **URL**: `{{base_url}}/api/categories/public/1`
+- **Headers**: Ninguno requerido
+- **Respuesta esperada**:
+```json
+{
+  "id_categoria": 1,
+  "nombre": "Cuidado del Cabello",
+  "descripcion": "Productos para el cuidado del cabello"
+}
+```
+
+### 📁 SUBCATEGORÍAS PÚBLICAS
+
+#### 1. Listar Subcategorías Públicas
+- **Método**: `GET`
+- **URL**: `{{base_url}}/api/subcategories/public`
+- **Headers**: Ninguno requerido
+- **Query Params** (opcionales):
+  - `skip`: `0`
+  - `limit`: `10`
+  - `categoria_id`: `1` (filtrar por categoría)
+- **Respuesta esperada** (siempre incluye detalles de categoría):
+```json
+{
+  "subcategorias": [
+    {
+      "id_subcategoria": 1,
+      "id_categoria": 1,
+      "nombre": "Shampoo",
+      "descripcion": "Shampoos para diferentes tipos de cabello",
+      "categoria_nombre": "Cuidado del Cabello"
+    }
+  ],
+  "total": 1
+}
+```
+
+
+
+#### 3. Listar Subcategorías Públicas por Categoría
+- **Método**: `GET`
+- **URL**: `{{base_url}}/api/subcategories/public?categoria_id=1`
+- **Headers**: Ninguno requerido
+- **Query Params**:
+  - `categoria_id`: `1` (ID de la categoría)
+- **Respuesta esperada**: Solo subcategorías de la categoría especificada
+
+#### 4. Obtener Subcategoría Pública por ID
+- **Método**: `GET`
+- **URL**: `{{base_url}}/api/subcategories/public/1`
+- **Headers**: Ninguno requerido
+- **Respuesta esperada** (siempre incluye detalles de categoría):
+```json
+{
+  "id_subcategoria": 1,
+  "id_categoria": 1,
+  "nombre": "Shampoo",
+  "descripcion": "Shampoos para diferentes tipos de cabello",
+  "categoria_nombre": "Cuidado del Cabello"
+}
+```
+
+
+
+### 📦 PRODUCTOS PÚBLICOS
+
+#### 1. Listar Productos Públicos (formato simple)
+- **Método**: `GET`
+- **URL**: `{{base_url}}/api/products/public-simple`
+- **Headers**: Ninguno requerido
+- **Respuesta esperada**:
+```json
+{
+  "productos": [
+    {
+      "id": 1,
+      "nombre": "Shampoo Reparador Intensivo",
+      "marca": "L'Oréal Paris",
+      "valor": 45000.0,
+      "stock": 50,
+      "estado": "ACTIVO",
+      "id_iva": 1
+    }
+  ],
+  "total": 1,
+  "message": "Productos obtenidos exitosamente"
+}
+```
+
+#### 2. Listar Productos Públicos (formato completo)
+- **Método**: `GET`
+- **URL**: `{{base_url}}/api/products/public`
+- **Headers**: Ninguno requerido
+- **Query Params** (opcionales):
+  - `skip`: `0`
+  - `limit`: `10`
+  - `categoria_id`: `1`
+  - `subcategoria_id`: `1`
+  - `estado`: `ACTIVO`
+  - `search`: `shampoo`
+- **Respuesta esperada** (siempre incluye detalles de relaciones):
+```json
+{
+  "productos": [
+    {
+      "id_producto": 1,
+      "id_categoria": 1,
+      "id_subcategoria": 1,
+      "id_iva": 1,
+      "codigo": "SH001",
+      "marca": "L'Oréal Paris",
+      "nombre": "Shampoo Reparador Intensivo",
+      "fecha_caducidad": "2025-12-31",
+      "imagen": "shampoo.jpg",
+      "valor": 45000.00,
+      "stock": 50,
+      "estado": "ACTIVO",
+      "categoria_nombre": "Cuidado del Cabello",
+      "subcategoria_nombre": "Shampoo",
+      "iva_nombre": "Sin IVA",
+      "iva_porcentaje": 0.0
+    }
+  ],
+  "total": 1
+}
+```
+
+
+
+#### 4. Obtener Producto Público por ID
+- **Método**: `GET`
+- **URL**: `{{base_url}}/api/products/public/1`
+- **Headers**: Ninguno requerido
+- **Respuesta esperada** (siempre incluye detalles de relaciones):
+```json
+{
+  "id_producto": 1,
+  "id_categoria": 1,
+  "id_subcategoria": 1,
+  "id_iva": 1,
+  "codigo": "SH001",
+  "marca": "L'Oréal Paris",
+  "nombre": "Shampoo Reparador Intensivo",
+  "fecha_caducidad": "2025-12-31",
+  "imagen": "shampoo.jpg",
+  "valor": 45000.00,
+  "stock": 50,
+  "estado": "ACTIVO",
+  "categoria_nombre": "Cuidado del Cabello",
+  "subcategoria_nombre": "Shampoo",
+  "iva_nombre": "Sin IVA",
+  "iva_porcentaje": 0.0
+}
+```
+
+
+
+#### 6. Endpoint de Prueba de Productos
+- **Método**: `GET`
+- **URL**: `{{base_url}}/api/products/test`
+- **Headers**: Ninguno requerido
+- **Respuesta esperada**:
+```json
+{
+  "message": "Router de productos funcionando correctamente",
+  "status": "success"
+}
+```
+
+### 🔍 FILTROS DISPONIBLES EN ENDPOINTS PÚBLICOS
+
+#### Para Productos Públicos:
+- `categoria_id`: Filtrar por ID de categoría
+- `subcategoria_id`: Filtrar por ID de subcategoría
+- `estado`: Filtrar por estado (por defecto "ACTIVO")
+- `search`: Buscar por nombre, marca o código
+
+#### Para Subcategorías Públicas:
+- `categoria_id`: Filtrar por ID de categoría
+
+#### Para Categorías Públicas:
+- `skip`: Número de registros a omitir (paginación)
+- `limit`: Número máximo de registros a retornar
+
+---
+
 ## 📂 ENDPOINTS DE CATEGORÍAS
 
 ### 1. Listar Categorías
@@ -415,6 +635,21 @@ if (pm.response.code === 200) {
 
 ## 🧪 ORDEN DE PRUEBAS RECOMENDADO
 
+### **Fase 0: Endpoints Públicos (Sin Autenticación)**
+> **Importante**: Probar estos endpoints ANTES de hacer login para verificar que funcionan sin autenticación.
+> **Nota**: Todos los endpoints públicos devuelven información detallada por defecto.
+
+1. **Endpoint de Prueba de Productos**: `GET {{base_url}}/api/products/test`
+2. **Listar Categorías Públicas**: `GET {{base_url}}/api/categories/public`
+3. **Obtener Categoría Pública por ID**: `GET {{base_url}}/api/categories/public/1`
+4. **Listar Subcategorías Públicas**: `GET {{base_url}}/api/subcategories/public`
+5. **Listar Subcategorías Públicas por Categoría**: `GET {{base_url}}/api/subcategories/public?categoria_id=1`
+6. **Obtener Subcategoría Pública por ID**: `GET {{base_url}}/api/subcategories/public/1`
+7. **Listar Productos Públicos (formato simple)**: `GET {{base_url}}/api/products/public-simple`
+8. **Listar Productos Públicos (formato completo)**: `GET {{base_url}}/api/products/public`
+9. **Obtener Producto Público por ID**: `GET {{base_url}}/api/products/public/1`
+10. **Probar filtros en productos**: `GET {{base_url}}/api/products/public?categoria_id=1&search=shampoo`
+
 ### **Fase 1: Autenticación**
 1. **Login** con `admin@sistema.com` / `admin123`
 2. Verificar que se guardaron los tokens en variables
@@ -491,6 +726,13 @@ if (pm.response.code === 200) {
 - Verificar que el token no haya expirado
 - Hacer login nuevamente
 
+### Error 4.1: "403 Forbidden" en endpoints públicos
+**Solución**:
+- Verificar que estés usando la URL correcta con `/public` o `/public-simple`
+- Los endpoints públicos NO requieren token de autorización
+- Ejemplo correcto: `GET {{base_url}}/api/products/public-simple`
+- Ejemplo incorrecto: `GET {{base_url}}/api/products` (requiere autenticación)
+
 ### Error 5: "403 Forbidden"
 **Solución**:
 - Verificar que el usuario tenga el perfil correcto
@@ -505,7 +747,12 @@ if (pm.response.code === 200) {
 
 ## 📝 NOTAS IMPORTANTES
 
-1. **Siempre usar el token**: Todos los endpoints (excepto login) requieren `Authorization: Bearer {{access_token}}`
+1. **Endpoints públicos vs privados**:
+   - **Endpoints públicos**: NO requieren autenticación, diseñados para clientes sin registro, SIEMPRE devuelven información detallada
+   - **Endpoints privados**: Requieren `Authorization: Bearer {{access_token}}`
+   - **Endpoints públicos disponibles**: `/public` y `/public-simple` en categorías, subcategorías y productos
+
+2. **Siempre usar el token**: Todos los endpoints privados requieren `Authorization: Bearer {{access_token}}`
 
 2. **IDs dinámicos**: Los IDs en las URLs deben ajustarse según los datos reales de la base de datos
 
@@ -534,8 +781,29 @@ if (pm.response.code === 200) {
 Una vez que todos los endpoints funcionen correctamente:
 
 1. **Integración Frontend-Backend**: Conectar el frontend React con estos endpoints
+   - Usar endpoints públicos para la página inicial y catálogo
+   - Usar endpoints privados para carrito, favoritos y perfil
 2. **Endpoints adicionales**: Implementar IVA, usuarios, ventas, etc.
 3. **Testing automatizado**: Crear tests unitarios y de integración
 4. **Documentación API**: Generar documentación automática con Swagger
+
+## 🌟 CARACTERÍSTICAS IMPLEMENTADAS
+
+### ✅ **Endpoints Públicos (Sin Autenticación)**
+- **Categorías públicas**: Consulta sin registro
+- **Subcategorías públicas**: Con filtros por categoría, siempre incluyen detalles de categoría
+- **Productos públicos**: Formato simple y completo, siempre incluyen detalles de relaciones
+- **Filtros avanzados**: Por categoría, subcategoría, búsqueda, estado
+
+### ✅ **Endpoints Privados (Con Autenticación)**
+- **CRUD completo**: Crear, leer, actualizar, eliminar
+- **Autorización por perfil**: Administrador, Publicador, Cliente
+- **Validaciones**: Integridad referencial, datos únicos
+
+### ✅ **Optimizaciones**
+- **Detalles por defecto**: Los endpoints principales incluyen información de relaciones
+- **Modo básico**: Usar `?basic=true` para datos simples
+- **Paginación**: Soporte para `skip` y `limit`
+- **Búsqueda**: Filtros por múltiples criterios
 
 ¡Listo para probar! 🚀

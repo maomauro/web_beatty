@@ -1,7 +1,11 @@
 import { Link } from 'react-router-dom';
 import { Facebook, Twitter, Instagram, Mail, Phone, MapPin } from 'lucide-react';
+import { useFooterSubcategories } from '../../hooks/usePublicData';
 
 export function Footer() {
+  // Obtener subcategorías para el footer
+  const { data: subcategorias = [], isLoading: subcategoriasLoading } = useFooterSubcategories();
+
   return (
     <footer className="bg-muted/50 border-t">
       <div className="container mx-auto px-4 py-12">
@@ -53,31 +57,25 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Categories */}
+          {/* Subcategorías */}
           <div className="space-y-4">
-            <h3 className="font-semibold">Categorías</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link to="/catalog?category=shampoo" className="text-sm text-muted-foreground hover:text-primary">
-                  Shampoo
-                </Link>
-              </li>
-              <li>
-                <Link to="/catalog?category=cremas" className="text-sm text-muted-foreground hover:text-primary">
-                  Cremas
-                </Link>
-              </li>
-              <li>
-                <Link to="/catalog?category=desodorantes" className="text-sm text-muted-foreground hover:text-primary">
-                  Desodorantes
-                </Link>
-              </li>
-              <li>
-                <Link to="/catalog?category=jabones" className="text-sm text-muted-foreground hover:text-primary">
-                  Jabones
-                </Link>
-              </li>
-            </ul>
+            <h3 className="font-semibold">Subcategorías</h3>
+            {subcategoriasLoading ? (
+              <div className="text-sm text-muted-foreground">Cargando...</div>
+            ) : (
+              <ul className="space-y-2">
+                {subcategorias.slice(0, 6).map((subcategoria) => (
+                  <li key={subcategoria.id_subcategoria}>
+                    <Link 
+                      to={`/catalog?subcategory=${subcategoria.id_subcategoria}`} 
+                      className="text-sm text-muted-foreground hover:text-primary"
+                    >
+                      {subcategoria.nombre}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           {/* Contact */}

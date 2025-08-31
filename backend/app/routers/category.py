@@ -8,6 +8,43 @@ from ..utils.auth import get_current_user
 
 router = APIRouter(prefix="/api/categories", tags=["categories"])
 
+# ===== ENDPOINTS PÚBLICOS (SIN AUTENTICACIÓN) =====
+
+@router.get("/public", response_model=CategoriaListResponse)
+def get_categorias_publicas(
+    skip: int = Query(0, ge=0, description="Número de registros a omitir"),
+    limit: int = Query(100, ge=1, le=1000, description="Número máximo de registros a retornar"),
+    db: Session = Depends(get_db)
+):
+    """
+    Obtener todas las categorías con paginación.
+    NO requiere autenticación.
+    """
+    categorias = crud_category.get_categorias(db, skip=skip, limit=limit)
+    total = crud_category.get_categorias_count(db)
+    
+    return CategoriaListResponse(
+        categorias=categorias,
+        total=total
+    )
+
+@router.get("/public/{categoria_id}", response_model=CategoriaResponse)
+def get_categoria_publica(
+    categoria_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    Obtener una categoría específica por ID.
+    NO requiere autenticación.
+    """
+    categoria = crud_category.get_categoria_by_id(db, categoria_id)
+    if not categoria:
+        raise HTTPException(status_code=404, detail="Categoría no encontrada")
+    
+    return categoria
+
+# ===== ENDPOINTS PRIVADOS (CON AUTENTICACIÓN) =====
+
 @router.get("/", response_model=CategoriaListResponse)
 def get_categorias(
     skip: int = Query(0, ge=0, description="Número de registros a omitir"),

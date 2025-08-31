@@ -147,3 +147,25 @@ def cleanup_expired_refresh_tokens():
     
     for token in expired_tokens:
         del refresh_tokens[token]
+
+def get_current_user_optional(credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)) -> Optional[Dict[str, Any]]:
+    """
+    Obtiene el usuario actual basado en el token, pero es opcional.
+    Si no se proporciona token, retorna None en lugar de error.
+    """
+    try:
+        if credentials is None:
+            return None
+        
+        token = credentials.credentials
+        payload = verify_token(token, "access")
+        
+        user_id = payload.get("user_id")
+        if user_id is None:
+            return None
+        
+        return payload
+    except HTTPException:
+        return None
+    except Exception:
+        return None

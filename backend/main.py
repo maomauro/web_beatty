@@ -31,7 +31,8 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(auth.router, prefix="/api")
 app.include_router(category.router)
 app.include_router(subcategory.router)
-app.include_router(product.router)
+app.include_router(product.router, prefix="/api")
+
 
 @app.get("/")
 def read_root():
@@ -44,6 +45,38 @@ def read_root():
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
+
+@app.get("/api/products/public-test")
+def get_productos_publicos_test():
+    """
+    Endpoint de prueba para productos públicos
+    """
+    return {
+        "productos": [
+            {
+                "id": 1,
+                "nombre": "Producto de prueba",
+                "marca": "Marca de prueba",
+                "valor": 10000,
+                "stock": 50,
+                "estado": "ACTIVO",
+                "id_iva": 1
+            }
+        ],
+        "total": 1,
+        "message": "Productos de prueba obtenidos exitosamente"
+    }
+
+@app.get("/api/test-connection")
+def test_connection():
+    """
+    Endpoint simple para probar la conexión
+    """
+    return {
+        "status": "success",
+        "message": "Backend funcionando correctamente",
+        "timestamp": "2024-01-01T00:00:00Z"
+    }
 
 @app.get("/favicon.ico")
 def favicon():
