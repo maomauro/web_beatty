@@ -1,0 +1,250 @@
+{
+	"info": {
+		"_postman_id": "668a227b-caa7-4bb1-bcae-dd680629f33a",
+		"name": "Auth API",
+		"description": "API de autenticación para Sistema Administrativo de Ventas",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "21377683",
+		"_collection_link": "https://universal-rocket-567135.postman.co/workspace/BEATTY~3d8ce7e7-c7a4-413f-9b21-84798b872ba6/collection/21377683-668a227b-caa7-4bb1-bcae-dd680629f33a?action=share&source=collection_link&creator=21377683"
+	},
+	"item": [
+		{
+			"name": "login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Script para guardar tokens en Web Beatty Local\r",
+							"console.log(\"🔍 Iniciando script Post-response...\");\r",
+							"\r",
+							"if (pm.response.code === 200) {\r",
+							"    console.log(\"✅ Response exitoso (200)\");\r",
+							"    \r",
+							"    try {\r",
+							"        const responseJson = pm.response.json();\r",
+							"        console.log(\"📋 Response JSON:\", JSON.stringify(responseJson, null, 2));\r",
+							"        \r",
+							"        // Verificar que los tokens existen en la respuesta\r",
+							"        if (responseJson.access_token && responseJson.refresh_token) {\r",
+							"            // Guardar tokens en el environment Web Beatty Local\r",
+							"            pm.environment.set(\"access_token\", responseJson.access_token);\r",
+							"            pm.environment.set(\"refresh_token\", responseJson.refresh_token);\r",
+							"            \r",
+							"            console.log(\"✅ Tokens guardados en Web Beatty Local\");\r",
+							"            console.log(\"🔑 Access Token:\", responseJson.access_token.substring(0, 50) + \"...\");\r",
+							"            console.log(\"🔄 Refresh Token:\", responseJson.refresh_token.substring(0, 50) + \"...\");\r",
+							"            \r",
+							"            // Verificar que se guardaron correctamente\r",
+							"            const savedAccessToken = pm.environment.get(\"access_token\");\r",
+							"            const savedRefreshToken = pm.environment.get(\"refresh_token\");\r",
+							"            \r",
+							"            console.log(\"✅ Verificación - Access Token guardado:\", savedAccessToken ? \"SÍ\" : \"NO\");\r",
+							"            console.log(\"✅ Verificación - Refresh Token guardado:\", savedRefreshToken ? \"SÍ\" : \"NO\");\r",
+							"            \r",
+							"        } else {\r",
+							"            console.log(\"❌ Error: Tokens no encontrados en la respuesta\");\r",
+							"            console.log(\"�� Campos disponibles:\", Object.keys(responseJson));\r",
+							"        }\r",
+							"        \r",
+							"    } catch (error) {\r",
+							"        console.log(\"❌ Error al procesar JSON:\", error.message);\r",
+							"        console.log(\"�� Response raw:\", pm.response.text());\r",
+							"    }\r",
+							"    \r",
+							"} else {\r",
+							"    console.log(\"❌ Error en login:\", pm.response.code);\r",
+							"    console.log(\"📋 Response:\", pm.response.text());\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "   {\r\n     \"email\": \"admin@sistema.com\",\r\n     \"password\": \"admin123\"\r\n   }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/auth/login",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "me",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/auth/me",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"auth",
+						"me"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "refresh",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"   // Script para actualizar access_token automáticamente\r",
+							"   if (pm.response.code === 200) {\r",
+							"       const responseJson = pm.response.json();\r",
+							"       \r",
+							"       // Actualizar solo el access_token\r",
+							"       pm.environment.set(\"access_token\", responseJson.access_token);\r",
+							"       \r",
+							"       console.log(\"✅ Access Token renovado automáticamente\");\r",
+							"       console.log(\"�� Nuevo Access Token:\", responseJson.access_token.substring(0, 50) + \"...\");\r",
+							"       \r",
+							"       // Verificar que se guardó correctamente\r",
+							"       const savedAccessToken = pm.environment.get(\"access_token\");\r",
+							"       console.log(\"✅ Verificación - Access Token actualizado:\", savedAccessToken ? \"SÍ\" : \"NO\");\r",
+							"       \r",
+							"   } else {\r",
+							"       console.log(\"❌ Error al renovar token:\", pm.response.text());\r",
+							"   }"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"refresh_token\": \"{{refresh_token}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/auth/refresh",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"auth",
+						"refresh"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "logout",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"   // Script para limpiar tokens al hacer logout\r",
+							"   if (pm.response.code === 200) {\r",
+							"       // Limpiar tokens\r",
+							"       pm.environment.set(\"access_token\", \"\");\r",
+							"       pm.environment.set(\"refresh_token\", \"\");\r",
+							"       \r",
+							"       console.log(\"✅ Tokens limpiados automáticamente\");\r",
+							"       console.log(\"🧹 Access Token: LIMPIADO\");\r",
+							"       console.log(\"�� Refresh Token: LIMPIADO\");\r",
+							"       \r",
+							"       // Verificar que se limpiaron correctamente\r",
+							"       const savedAccessToken = pm.environment.get(\"access_token\");\r",
+							"       const savedRefreshToken = pm.environment.get(\"refresh_token\");\r",
+							"       \r",
+							"       console.log(\"✅ Verificación - Access Token limpiado:\", savedAccessToken === \"\" ? \"SÍ\" : \"NO\");\r",
+							"       console.log(\"✅ Verificación - Refresh Token limpiado:\", savedRefreshToken === \"\" ? \"SÍ\" : \"NO\");\r",
+							"       \r",
+							"   } else {\r",
+							"       console.log(\"❌ Error en logout:\", pm.response.text());\r",
+							"   }"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"refresh_token\": \"{{refresh_token}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/auth/logout",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"auth",
+						"logout"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

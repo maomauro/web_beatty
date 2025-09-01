@@ -1,0 +1,189 @@
+{
+	"info": {
+		"_postman_id": "995111d8-7fb3-450c-b531-1b30d6b074da",
+		"name": "Publico",
+		"description": "**Importante**: Estos endpoints NO requieren autenticación y están diseñados para que los clientes puedan consultar información sin necesidad de registrarse.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "21377683",
+		"_collection_link": "https://universal-rocket-567135.postman.co/workspace/BEATTY~3d8ce7e7-c7a4-413f-9b21-84798b872ba6/collection/21377683-995111d8-7fb3-450c-b531-1b30d6b074da?action=share&source=collection_link&creator=21377683"
+	},
+	"item": [
+		{
+			"name": "Listar Categorías",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/categories/public",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"categories",
+						"public"
+					],
+					"query": [
+						{
+							"key": "skip",
+							"value": "0",
+							"disabled": true
+						},
+						{
+							"key": "limit",
+							"value": "10",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Categoría Id",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/categories/public/1",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"categories",
+						"public",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Listar Subcategorías",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/subcategories/public?categoria_id=1",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"subcategories",
+						"public"
+					],
+					"query": [
+						{
+							"key": "skip",
+							"value": "0",
+							"disabled": true
+						},
+						{
+							"key": "limit",
+							"value": "10",
+							"disabled": true
+						},
+						{
+							"key": "categoria_id",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Subcategoría Id",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/subcategories/public/1",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"subcategories",
+						"public",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Listar Productos",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/products/public",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"products",
+						"public"
+					],
+					"query": [
+						{
+							"key": "skip",
+							"value": "0",
+							"disabled": true
+						},
+						{
+							"key": "limit",
+							"value": "10",
+							"disabled": true
+						},
+						{
+							"key": "categoria_id",
+							"value": "1",
+							"disabled": true
+						},
+						{
+							"key": "subcategoria_id",
+							"value": "1",
+							"disabled": true
+						},
+						{
+							"key": "estado",
+							"value": "ACTIVO",
+							"disabled": true
+						},
+						{
+							"key": "search",
+							"value": "shampoo",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Producto Id",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/products/public/60",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"products",
+						"public",
+						"60"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
