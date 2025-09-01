@@ -16,6 +16,7 @@ import { ProductDetailModal } from './components/modals/ProductDetailModal';
 import { AuthPromptModal } from './components/modals/AuthPromptModal';
 import { AboutModal } from './components/modals/AboutModal';
 import { LogoutConfirmModal } from './components/modals/LogoutConfirmModal';
+
 import { AdminLayout } from './components/admin/AdminLayout';
 import { DashboardPage } from './pages/admin/DashboardPage';
 import { ProfilesPage } from './pages/admin/ProfilesPage';
@@ -35,17 +36,27 @@ import { ProductsPage as PublisherProductsPage } from './pages/publisher/Product
 import { CategoriesPage as PublisherCategoriesPage } from './pages/publisher/CategoriesPage';
 import { SubcategoriesPage as PublisherSubcategoriesPage } from './pages/publisher/SubcategoriesPage';
 import { IvaPage as PublisherIvaPage } from './pages/publisher/IvaPage';
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ProductoUI, CartItemUI, UserUI } from './types';
 import { useFavorites } from './hooks/useFavorites';
+import { useLocalStorage } from './hooks/useLocalStorage';
 import { useAuthContext } from './contexts/AuthContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { queryClient } from './lib/react-query';
 import { ProtectedRoute } from './components/common/ProtectedRoute';
 import { useProducts } from './hooks/useProducts';
+import { debug } from './utils/debugUtils';
 
 function AppContent() {
-  const { user: currentUser, isAuthenticated } = useAuthContext();
+  const { user: currentUser, isAuthenticated, logout } = useAuthContext();
+
+  // Cargar carrito desde backend cuando el usuario se loguea
+  useEffect(() => {
+    if (isAuthenticated && currentUser) {
+      debug.status();
+      loadCartFromBackend();
+    }
+  }, [isAuthenticated, currentUser]);
 
   // Función para convertir UserData a UserUI
   const convertUserDataToUserUI = (userData: any): UserUI | null => {
@@ -90,7 +101,21 @@ function AppContent() {
   const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<ProductoUI | null>(null);
-  const [cartItems, setCartItems] = useState<CartItemUI[]>([]);
+  
+  // Cart hook con localStorage
+  const {
+    cartItems,
+    addToCart,
+    updateQuantity,
+    removeFromCart,
+    clearCart,
+    saveCartToBackend,
+    loadCartFromBackend,
+    getCartItemCount,
+    getCartSubtotal,
+    getCartIvaTotal,
+    getCartTotal
+  } = useLocalStorage();
   
   // Favorites hook
   const { 
@@ -164,39 +189,16 @@ function AppContent() {
   const displayProducts = products.length > 0 ? products : mockProducts;
 
   const handleAddToCart = (product: ProductoUI) => {
-    const existingItem = cartItems.find(item => item.id === product.id);
-    
-    if (existingItem) {
-      setCartItems(cartItems.map(item =>
-        item.id === product.id
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
-      ));
-    } else {
-      setCartItems([...cartItems, {
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        image: product.image,
-        quantity: 1,
-        brand: product.brand,
-        stock: product.stock,
-      }]);
-    }
-    
+    addToCart(product);
     setIsCartOpen(true);
   };
 
   const handleRemoveFromCart = (productId: string) => {
-    setCartItems(cartItems.filter(item => item.id !== productId));
+    removeFromCart(productId);
   };
 
   const handleUpdateQuantity = (productId: string, quantity: number) => {
-    setCartItems(cartItems.map(item =>
-      item.id === productId
-        ? { ...item, quantity: Math.max(0, quantity) }
-        : item
-    ));
+    updateQuantity(productId, quantity);
   };
 
   const handleToggleFavorite = (product: ProductoUI) => {
@@ -212,13 +214,39 @@ function AppContent() {
     setIsAuthPromptOpen(true);
   };
 
-  const handleLogoutConfirm = () => {
-    // Limpiar carrito al cerrar sesión
-    setCartItems([]);
+  const handleLogoutConfirm = async () => {
+    console.log('🚪 Cerrando sesión...');
+    
+    try {
+      // Guardar carrito en backend antes de cerrar sesión
+      await saveCartToBackend();
+    } catch (error) {
+      console.error('❌ Error al guardar carrito:', error);
+    }
+    
+    // Limpiar carrito local
+    clearCart();
+    
+    // Ejecutar logout del contexto
+    await logout();
+    
     // Los favoritos se mantienen en localStorage
     setIsLogoutConfirmOpen(false);
+    console.log('✅ Sesión cerrada');
     // La redirección se manejará automáticamente en el contexto
   };
+
+  // Exponer funciones globalmente para que el Header pueda usarlas
+  React.useEffect(() => {
+    (window as any).handleLogoutConfirm = handleLogoutConfirm;
+    (window as any).saveCartToBackend = saveCartToBackend;
+    (window as any).loadCartFromBackend = loadCartFromBackend;
+    return () => {
+      delete (window as any).handleLogoutConfirm;
+      delete (window as any).saveCartToBackend;
+      delete (window as any).loadCartFromBackend;
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -226,7 +254,7 @@ function AppContent() {
         onAuthClick={() => setIsAuthOpen(true)}
         onCartClick={() => setIsCartOpen(true)}
         onFavoritesClick={() => setIsFavoritesOpen(true)}
-        cartItemCount={cartItems.length}
+        cartItemCount={getCartItemCount()}
         favoritesCount={favoritesCount}
       />
       
@@ -331,6 +359,10 @@ function AppContent() {
         items={cartItems}
         onRemoveItem={handleRemoveFromCart}
         onUpdateQuantity={handleUpdateQuantity}
+        getCartSubtotal={getCartSubtotal}
+        getCartIvaTotal={getCartIvaTotal}
+        getCartTotal={getCartTotal}
+        clearCart={clearCart}
       />
 
       <FavoritesSidebar
@@ -367,9 +399,9 @@ function AppContent() {
          isOpen={isLogoutConfirmOpen}
          onClose={() => setIsLogoutConfirmOpen(false)}
          onConfirm={handleLogoutConfirm}
-         cartItemCount={cartItems.length}
-         favoritesCount={favoritesCount}
        />
+
+
 
        <Toaster />
     </div>

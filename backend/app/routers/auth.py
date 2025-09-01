@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.schemas.auth import (
@@ -11,6 +12,9 @@ from app.utils.auth import (
     get_current_user, refresh_access_token, revoke_refresh_token
 )
 from typing import Dict, Any
+
+# Esquema de seguridad para extraer el token
+security = HTTPBearer()
 
 router = APIRouter(prefix="/auth", tags=["autenticación"])
 
@@ -28,6 +32,15 @@ def login(login_data: LoginRequest, db: Session = Depends(get_db)):
             detail="Credenciales incorrectas",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    
+    # Verificar que user_data tenga todos los campos necesarios
+    required_fields = ["user_id", "email", "profile", "person_name", "person_data"]
+    for field in required_fields:
+        if field not in user_data:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Campo requerido '{field}' no encontrado en los datos del usuario"
+            )
     
     # Crear tokens
     access_token = create_access_token(data=user_data)
@@ -79,27 +92,44 @@ def logout(logout_data: LogoutRequest):
             detail="Error al cerrar sesión"
         )
 
-@router.get("/me", response_model=UserResponse)
+@router.get("/me")
 def get_current_user_info(
-    current_user: Dict[str, Any] = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
     """
     Endpoint para obtener información del usuario actual
     """
-    # Obtener datos completos del usuario desde la base de datos
-    user_data = get_user_by_id(db, current_user["user_id"])
-    
-    if not user_data:
+    try:
+        # Usar directamente la información del token
+        token = credentials.credentials
+        from ..utils.auth import verify_token
+        payload = verify_token(token, "access")
+        
+        # Verificar que el payload tenga todos los campos necesarios
+        required_fields = ["user_id", "email", "profile", "person_name", "person_data"]
+        for field in required_fields:
+            if field not in payload:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Campo requerido '{field}' no encontrado en el token"
+                )
+        
+        return {
+            "user_id": payload["user_id"],
+            "email": payload["email"],
+            "profile": payload["profile"],
+            "person_name": payload["person_name"],
+            "person_data": payload["person_data"]
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error en /auth/me: {str(e)}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Usuario no encontrado"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error interno del servidor: {str(e)}"
         )
-    
-    return UserResponse(
-        user_id=user_data["user_id"],
-        email=user_data["email"],
-        profile=user_data["profile"],
-        person_name=user_data["person_name"],
-        person_data=user_data["person_data"]
-    )
+
+

@@ -135,6 +135,11 @@ export interface CartItemUI {
   quantity: number;
   brand: string;
   stock: number;
+  id_iva: number;
+  iva_rate?: number;
+  subtotal: number;
+  iva_amount: number;
+  total: number;
 }
 
 export interface UserUI {

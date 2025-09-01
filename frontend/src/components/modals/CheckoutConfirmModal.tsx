@@ -3,8 +3,10 @@ import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
 import { CartItemUI } from '../../types';
-import { ShoppingCart, CreditCard, Truck, CheckCircle, AlertCircle } from 'lucide-react';
+import { ShoppingCart, CreditCard, Truck, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { ThankYouModal } from './ThankYouModal';
+import { cartService } from '../../services/cartService';
+import { toast } from 'sonner';
 
 interface CheckoutConfirmModalProps {
   isOpen: boolean;
@@ -12,6 +14,9 @@ interface CheckoutConfirmModalProps {
   onConfirm: () => void;
   items: CartItemUI[];
   total: number;
+  getCartSubtotal: () => number;
+  getCartIvaTotal: () => number;
+  getCartTotal: () => number;
 }
 
 export function CheckoutConfirmModal({ 
@@ -19,13 +24,17 @@ export function CheckoutConfirmModal({
   onClose, 
   onConfirm, 
   items, 
-  total 
+  total,
+  getCartSubtotal,
+  getCartIvaTotal,
+  getCartTotal
 }: CheckoutConfirmModalProps) {
   const [isThankYouOpen, setIsThankYouOpen] = useState(false);
-  const subtotal = total;
+  const [isConfirming, setIsConfirming] = useState(false);
+  const subtotal = getCartSubtotal();
   const shipping = 0; // Envío gratis
-  const tax = total * 0.19; // IVA 19%
-  const finalTotal = subtotal + shipping + tax;
+  const tax = getCartIvaTotal();
+  const finalTotal = getCartTotal();
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
   const formatCurrency = (amount: number) => {
@@ -36,9 +45,55 @@ export function CheckoutConfirmModal({
     }).format(amount);
   };
 
-  const handleConfirmPurchase = () => {
-    setIsThankYouOpen(true);
-    // No llamamos onConfirm() aquí para evitar que se cierre el carrito inmediatamente
+  const handleConfirmPurchase = async () => {
+    if (items.length === 0) {
+      toast.error('El carrito está vacío');
+      return;
+    }
+
+    setIsConfirming(true);
+    
+    try {
+      // Confirmar la compra en el backend
+      const result = await cartService.confirmPurchase();
+      
+      console.log('✅ Compra confirmada:', result);
+      
+      // Mostrar información de actualización de stock si está disponible
+      if (result.stock_updates && result.stock_updates.length > 0) {
+        console.log('📦 Actualizaciones de stock:', result.stock_updates);
+        // Opcional: mostrar toast con información de stock
+        const stockInfo = result.stock_updates.map((update: any) => 
+          `${update.nombre}: ${update.stock_anterior} → ${update.stock_actual}`
+        ).join(', ');
+        toast.success(`¡Compra confirmada! Stock actualizado: ${stockInfo}`);
+      } else {
+        toast.success('¡Compra confirmada exitosamente!');
+      }
+      
+      // Mostrar modal de agradecimiento
+      setIsThankYouOpen(true);
+      
+      // Limpiar carrito local después de confirmar exitosamente
+      // Esto llama a handleConfirmCheckout que ejecuta clearCart()
+      onConfirm();
+      
+    } catch (error: any) {
+      // console.error('❌ Error confirmando compra:', error);
+      
+      const errorMessage = error.response?.data?.detail || 
+                          error.message || 
+                          'Error al confirmar la compra';
+      
+      // Mostrar error específico de stock insuficiente
+      if (errorMessage.includes('Stock insuficiente')) {
+        toast.error(`❌ ${errorMessage}`);
+      } else {
+        toast.error(errorMessage);
+      }
+    } finally {
+      setIsConfirming(false);
+    }
   };
 
   return (
@@ -103,7 +158,7 @@ export function CheckoutConfirmModal({
                   <span className="text-green-600 font-medium">Gratis</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span>IVA (19%):</span>
+                  <span>IVA:</span>
                   <span className="font-medium">{formatCurrency(tax)}</span>
                 </div>
                 <div className="border-t pt-3 flex justify-between font-semibold text-lg">
@@ -208,8 +263,16 @@ export function CheckoutConfirmModal({
             <Button
               className="flex-1"
               onClick={handleConfirmPurchase}
+              disabled={isConfirming}
             >
-              Confirmar Compra
+              {isConfirming ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Confirmando...
+                </>
+              ) : (
+                'Confirmar Compra'
+              )}
             </Button>
           </div>
         </div>

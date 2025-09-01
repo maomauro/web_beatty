@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Button } from '../ui/button';
-import { ShoppingCart, User, Heart, Menu, LogOut, Settings, Store } from 'lucide-react';
+import { ShoppingCart, User, Heart, Menu, LogOut, Settings, Store, History } from 'lucide-react';
 import { useAuthContext } from '../../contexts/AuthContext';
 import { useState } from 'react';
 import { LogoutConfirmModal } from '../modals/LogoutConfirmModal';
@@ -79,7 +79,13 @@ export function Header({ onAuthClick, onCartClick, onFavoritesClick, cartItemCou
       isOpen={showLogoutModal}
       onClose={() => setShowLogoutModal(false)}
       onConfirm={async () => {
-        await logout();
+        // Llamar a handleLogoutConfirm del App.tsx
+        if (window.handleLogoutConfirm) {
+          await window.handleLogoutConfirm();
+        } else {
+          // Fallback al logout del contexto
+          await logout();
+        }
         setShowLogoutModal(false);
       }}
       userName={currentUser?.person_name}
@@ -129,8 +135,8 @@ export function Header({ onAuthClick, onCartClick, onFavoritesClick, cartItemCou
               </Button>
             )}
 
-            {/* Cart - Solo visible si está autenticado y NO es administrador */}
-            {currentUser && currentUser.profile !== 'Administrador' && (
+            {/* Cart - Solo visible si está autenticado y es Cliente */}
+            {currentUser && currentUser.profile === 'Cliente' && (
               <Button variant="ghost" size="icon" onClick={onCartClick} className="relative">
                 <ShoppingCart className="h-5 w-5" />
                 {cartItemCount > 0 && (
@@ -140,6 +146,8 @@ export function Header({ onAuthClick, onCartClick, onFavoritesClick, cartItemCou
                 )}
               </Button>
             )}
+
+
 
             {/* User */}
             {currentUser ? (
@@ -193,7 +201,13 @@ export function Header({ onAuthClick, onCartClick, onFavoritesClick, cartItemCou
       isOpen={showLogoutModal}
       onClose={() => setShowLogoutModal(false)}
       onConfirm={async () => {
-        await logout();
+        // Llamar a handleLogoutConfirm del App.tsx
+        if ((window as any).handleLogoutConfirm) {
+          await (window as any).handleLogoutConfirm();
+        } else {
+          // Fallback al logout del contexto
+          await logout();
+        }
         setShowLogoutModal(false);
       }}
       userName={currentUser?.person_name}

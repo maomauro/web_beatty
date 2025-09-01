@@ -394,6 +394,7 @@ export function UsersPage() {
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     placeholder="Contraseña"
+                    autoComplete="new-password"
                   />
                   <Button
                     type="button"
@@ -493,6 +494,7 @@ export function UsersPage() {
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     placeholder="Contraseña"
+                    autoComplete="new-password"
                   />
                   <Button
                     type="button"

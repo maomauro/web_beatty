@@ -50,6 +50,8 @@ export const getProducts = async (): Promise<ProductoUI[]> => {
   }
 };
 
+
+
 // Obtener productos sin IVA
 export const getProductsSinIva = async (): Promise<ProductoUI[]> => {
   try {

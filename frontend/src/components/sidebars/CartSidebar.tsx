@@ -11,6 +11,10 @@ interface CartSidebarProps {
   items: CartItemUI[];
   onRemoveItem: (productId: string) => void;
   onUpdateQuantity: (productId: string, quantity: number) => void;
+  getCartSubtotal: () => number;
+  getCartIvaTotal: () => number;
+  getCartTotal: () => number;
+  clearCart: () => void; // Nueva función para limpiar el carrito
 }
 
 export function CartSidebar({ 
@@ -18,10 +22,13 @@ export function CartSidebar({
   onClose, 
   items, 
   onRemoveItem, 
-  onUpdateQuantity 
+  onUpdateQuantity,
+  getCartSubtotal,
+  getCartIvaTotal,
+  getCartTotal,
+  clearCart
 }: CartSidebarProps) {
   const [isCheckoutConfirmOpen, setIsCheckoutConfirmOpen] = useState(false);
-  const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
   const handleCheckout = () => {
@@ -29,7 +36,9 @@ export function CartSidebar({
   };
 
   const handleConfirmCheckout = () => {
-    // Aquí se implementaría la lógica de checkout real
+    // Limpiar el carrito después de confirmar la compra exitosamente
+    console.log('🧹 Limpiando carrito después de confirmar compra...');
+    clearCart();
     setIsCheckoutConfirmOpen(false);
     onClose();
   };
@@ -148,12 +157,14 @@ export function CartSidebar({
                               </Button>
                             </div>
                             <div className="text-right">
-                              <p className="text-sm font-semibold">
-                                ${(item.price * item.quantity).toLocaleString()}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                Stock: {item.stock}
-                              </p>
+                              <div className="text-xs text-muted-foreground space-y-1">
+                                <p>Subtotal: ${item.subtotal.toLocaleString()}</p>
+                                <p>IVA ({item.iva_rate}%): ${item.iva_amount.toLocaleString()}</p>
+                                <p className="text-sm font-semibold text-foreground">
+                                  Total: ${item.total.toLocaleString()}
+                                </p>
+                                <p>Stock: {item.stock}</p>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -172,19 +183,19 @@ export function CartSidebar({
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Subtotal ({itemCount} items):</span>
-                  <span className="font-semibold">${total.toLocaleString()}</span>
+                  <span className="font-semibold">${getCartSubtotal().toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Envío:</span>
                   <span className="text-muted-foreground">Gratis</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span>IVA (19%):</span>
-                  <span className="font-semibold">${(total * 0.19).toLocaleString()}</span>
+                  <span>Total IVA:</span>
+                  <span className="font-semibold">${getCartIvaTotal().toLocaleString()}</span>
                 </div>
                 <div className="border-t pt-2 flex justify-between font-semibold">
                   <span>Total:</span>
-                  <span>${(total * 1.19).toLocaleString()}</span>
+                  <span>${getCartTotal().toLocaleString()}</span>
                 </div>
               </div>
 
@@ -223,7 +234,10 @@ export function CartSidebar({
         onClose={() => setIsCheckoutConfirmOpen(false)}
         onConfirm={handleConfirmCheckout}
         items={items}
-        total={total}
+        total={getCartTotal()}
+        getCartSubtotal={getCartSubtotal}
+        getCartIvaTotal={getCartIvaTotal}
+        getCartTotal={getCartTotal}
       />
     </>
   );

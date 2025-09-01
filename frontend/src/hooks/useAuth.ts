@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import authService, { LoginRequest, UserData } from '../services/authService';
+import { debug } from '../utils/debugUtils';
 
 export const useAuth = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -28,6 +29,9 @@ export const useAuth = () => {
       setIsAuthenticated(true);
       queryClient.setQueryData(['user'], data.user);
       queryClient.invalidateQueries({ queryKey: ['user'] });
+      
+      // Debug del login
+      debug.login(data.user);
       
       // Redirección automática según el perfil del usuario
       setTimeout(() => {
@@ -58,6 +62,10 @@ export const useAuth = () => {
     onSuccess: () => {
       setIsAuthenticated(false);
       queryClient.clear();
+      
+      // Debug del logout
+      debug.logout();
+      
       // Redirección automática al logout
       navigate('/');
     },

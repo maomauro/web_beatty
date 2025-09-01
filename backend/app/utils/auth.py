@@ -4,7 +4,10 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from fastapi import HTTPException, status, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from sqlalchemy.orm import Session, joinedload
 from config import settings
+from ..database import get_db
+from ..models.user import Usuario
 
 # Configuración de seguridad
 SECRET_KEY = settings.SECRET_KEY
@@ -92,7 +95,7 @@ def verify_token(token: str, token_type: str = "access") -> Dict[str, Any]:
             detail="Token inválido"
         )
 
-def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> Dict[str, Any]:
+def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)) -> Usuario:
     """Obtiene el usuario actual basado en el token"""
     token = credentials.credentials
     payload = verify_token(token, "access")
@@ -104,7 +107,20 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
             detail="Token inválido"
         )
     
-    return payload
+    # Obtener el usuario de la base de datos con relaciones cargadas
+    from sqlalchemy.orm import joinedload
+    user = db.query(Usuario).options(
+        joinedload(Usuario.persona),
+        joinedload(Usuario.perfil)
+    ).filter(Usuario.id_usuario == user_id).first()
+    
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Usuario no encontrado"
+        )
+    
+    return user
 
 def refresh_access_token(refresh_token: str) -> str:
     """Renueva un token de acceso usando un refresh token"""
@@ -148,7 +164,7 @@ def cleanup_expired_refresh_tokens():
     for token in expired_tokens:
         del refresh_tokens[token]
 
-def get_current_user_optional(credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)) -> Optional[Dict[str, Any]]:
+def get_current_user_optional(credentials: Optional[HTTPAuthorizationCredentials] = Depends(security), db: Session = Depends(get_db)) -> Optional[Usuario]:
     """
     Obtiene el usuario actual basado en el token, pero es opcional.
     Si no se proporciona token, retorna None en lugar de error.
@@ -164,7 +180,9 @@ def get_current_user_optional(credentials: Optional[HTTPAuthorizationCredentials
         if user_id is None:
             return None
         
-        return payload
+        # Obtener el usuario de la base de datos
+        user = db.query(Usuario).filter(Usuario.id_usuario == user_id).first()
+        return user
     except HTTPException:
         return None
     except Exception:

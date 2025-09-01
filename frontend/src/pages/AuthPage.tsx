@@ -170,6 +170,7 @@ export function AuthPage({ isOpen, onClose }: AuthPageProps) {
                     value={loginForm.email}
                     onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
                     className="pl-10"
+                    autoComplete="email"
                     required
                   />
                 </div>
@@ -188,6 +189,7 @@ export function AuthPage({ isOpen, onClose }: AuthPageProps) {
                     value={loginForm.password}
                     onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
                     className="pl-10 pr-10"
+                    autoComplete="current-password"
                     required
                   />
                   <button

@@ -45,6 +45,7 @@ En la colección, crear estas carpetas:
 - `📂 Categories`
 - `📁 Subcategories`
 - `📦 Products`
+- `🛒 Cart & Sales`
 
 ---
 
@@ -805,5 +806,299 @@ Una vez que todos los endpoints funcionen correctamente:
 - **Modo básico**: Usar `?basic=true` para datos simples
 - **Paginación**: Soporte para `skip` y `limit`
 - **Búsqueda**: Filtros por múltiples criterios
+
+---
+
+## 🛒 ENDPOINTS DE CARRITO Y VENTAS
+
+### **Requisitos Previos**
+- Usuario autenticado (todos los endpoints requieren token)
+- **Credenciales de prueba**:
+  - **Admin**: `admin@sistema.com` / `admin123` (puede ver todas las ventas)
+  - **Cliente**: `cliente@prueba.com` / `cliente123` (puede crear carritos y ver sus ventas)
+  - **Publicador**: `publicador@sistema.com` / `publi123` (no tiene acceso a ventas)
+
+**Nota**: Si no existe el usuario cliente, ejecutar: `python create_test_client.py`
+
+### **Secuencia de Operaciones**
+1. **Login** para obtener token
+2. **Crear carrito** (crea venta + items) - **Solo Clientes**
+3. **Consultar ventas** del usuario - **Admin ve todas, Cliente ve sus propias**
+4. **Ver detalle** de venta específica - **Admin ve cualquier venta, Cliente ve sus propias**
+
+## 🔐 AUTORIZACIÓN POR PERFIL
+
+### **Permisos por Perfil:**
+
+| Perfil            | Crear Carrito | Ver Ventas Propias | Ver Todas las Ventas |
+|-------------------|---------------|--------------------|----------------------|
+| **Administrador** | ❌ No         | ✅ Sí             | ✅ Sí                |
+| **Publicador**    | ❌ No         | ❌ No             | ❌ No                |
+| **Cliente**       | ✅ Sí         | ✅ Sí             | ❌ No                |
+
+### **Notas Importantes:**
+- **Solo Clientes** pueden crear carritos y ventas
+- **Administradores** pueden ver todas las ventas del sistema (incluyendo las de otros usuarios)
+- **Publicadores** no tienen acceso a funcionalidades de ventas
+- **Clientes** solo pueden ver sus propias ventas
+
+---
+
+### 1. Crear Carrito y Venta
+- **Método**: `POST`
+- **URL**: `{{base_url}}/api/cart/create`
+- **Headers**: 
+  - `Content-Type: application/json`
+  - `Authorization: Bearer {{access_token}}`
+- **Body** (raw JSON):
+```json
+{
+  "items": [
+    {
+      "id_producto": 1,
+      "cantidad": 2,
+      "valor_unitario": 15000.0,
+      "iva_calculado": 2850.0,
+      "subtotal": 32850.0
+    },
+    {
+      "id_producto": 2,
+      "cantidad": 1,
+      "valor_unitario": 25000.0,
+      "iva_calculado": 4750.0,
+      "subtotal": 29750.0
+    }
+  ]
+}
+```
+
+**Respuesta Exitosa (201)**:
+```json
+{
+  "id_venta": 1,
+  "total_venta": 62600.0,
+  "estado": "PENDIENTE",
+  "fecha_venta": "2024-01-15T10:30:00",
+  "items": [
+    {
+      "id_carrito": 1,
+      "id_venta": 1,
+      "id_usuario": 6,
+      "id_producto": 1,
+      "cantidad": 2,
+      "valor_unitario": 15000.0,
+      "iva_calculado": 2850.0,
+      "subtotal": 32850.0,
+      "fecha_carrito": "2024-01-15T10:30:00",
+      "estado": "ACTIVO",
+      "fecha_abandono": null
+    },
+    {
+      "id_carrito": 2,
+      "id_venta": 1,
+      "id_usuario": 6,
+      "id_producto": 2,
+      "cantidad": 1,
+      "valor_unitario": 25000.0,
+      "iva_calculado": 4750.0,
+      "subtotal": 29750.0,
+      "fecha_carrito": "2024-01-15T10:30:00",
+      "estado": "ACTIVO",
+      "fecha_abandono": null
+    }
+  ]
+}
+```
+
+---
+
+### 2. Listar Ventas del Usuario
+- **Método**: `GET`
+- **URL**: `{{base_url}}/api/cart/sales`
+- **Headers**: `Authorization: Bearer {{access_token}}`
+- **Query Parameters** (opcionales):
+  - `skip`: 0 (registros a omitir)
+  - `limit`: 100 (máximo de registros)
+
+**Respuesta Exitosa (200)**:
+```json
+[
+  {
+    "id_venta": 1,
+    "id_usuario": 6,
+    "total_venta": 62600.0,
+    "estado": "PENDIENTE",
+    "fecha_venta": "2024-01-15T10:30:00",
+    "usuario_nombre": "Admin Sistema",
+    "usuario_email": "admin@sistema.com"
+  },
+  {
+    "id_venta": 2,
+    "id_usuario": 6,
+    "total_venta": 45000.0,
+    "estado": "CONFIRMADA",
+    "fecha_venta": "2024-01-14T15:20:00",
+    "usuario_nombre": "Admin Sistema",
+    "usuario_email": "admin@sistema.com"
+  }
+]
+```
+
+---
+
+### 3. Detalle de Venta y Carrito
+- **Método**: `GET`
+- **URL**: `{{base_url}}/api/cart/sale/{sale_id}`
+- **Headers**: `Authorization: Bearer {{access_token}}`
+- **Ejemplo**: `{{base_url}}/api/cart/sale/1`
+
+**Respuesta Exitosa (200)**:
+```json
+{
+  "id_venta": 1,
+  "total_venta": 62600.0,
+  "estado": "PENDIENTE",
+  "fecha_venta": "2024-01-15T10:30:00",
+  "items": [
+    {
+      "id_carrito": 1,
+      "id_venta": 1,
+      "id_usuario": 6,
+      "id_producto": 1,
+      "cantidad": 2,
+      "valor_unitario": 15000.0,
+      "iva_calculado": 2850.0,
+      "subtotal": 32850.0,
+      "fecha_carrito": "2024-01-15T10:30:00",
+      "estado": "ACTIVO",
+      "fecha_abandono": null
+    },
+    {
+      "id_carrito": 2,
+      "id_venta": 1,
+      "id_usuario": 6,
+      "id_producto": 2,
+      "cantidad": 1,
+      "valor_unitario": 25000.0,
+      "iva_calculado": 4750.0,
+      "subtotal": 29750.0,
+      "fecha_carrito": "2024-01-15T10:30:00",
+      "estado": "ACTIVO",
+      "fecha_abandono": null
+    }
+  ]
+}
+```
+
+---
+
+### 4. Confirmar Compra
+- **Método**: `PUT`
+- **URL**: `{{base_url}}/api/cart/confirm`
+- **Headers**: `Authorization: Bearer {{access_token}}`
+- **Descripción**: Confirma la compra del carrito actual, cambiando el estado de PENDIENTE a CONFIRMADO
+
+**Cambios en la base de datos:**
+- `tbl_venta.estado`: `'PENDIENTE'` → `'CONFIRMADO'`
+- `tbl_venta.fecha_venta`: Se actualiza a la fecha actual
+- `tbl_carrito.estado`: `'ACTIVO'` → `'VENTA'` para todos los items
+- `tbl_producto.stock`: Se reduce según las cantidades vendidas
+
+**Respuesta Exitosa (200)**:
+```json
+{
+  "message": "Compra confirmada exitosamente",
+  "id_venta": 1,
+  "total_venta": 62600.0,
+  "fecha_venta": "2024-01-15T15:45:30",
+  "estado": "CONFIRMADO",
+  "items_count": 2,
+  "stock_updates": [
+    {
+      "id_producto": 42,
+      "nombre": "Desodorante clásico 150ml",
+      "stock_anterior": 120,
+      "stock_actual": 118,
+      "cantidad_vendida": 2
+    },
+    {
+      "id_producto": 32,
+      "nombre": "Cepillo dental suave",
+      "stock_anterior": 80,
+      "stock_actual": 79,
+      "cantidad_vendida": 1
+    }
+  ]
+}
+```
+
+**Errores posibles:**
+- **403 Forbidden**: Solo clientes pueden confirmar compras
+- **404 Not Found**: No hay carrito pendiente para confirmar
+- **400 Bad Request**: El carrito está vacío
+- **400 Bad Request**: Stock insuficiente para algún producto
+- **400 Bad Request**: Producto no encontrado
+
+---
+
+## 🛒 FLUJO DE PRUEBA - CARRITO Y VENTAS
+
+### **Paso 1: Login**
+1. Ejecutar **Login** para obtener token
+2. Verificar que `access_token` se guarde en variables
+
+### **Paso 2: Crear Carrito**
+1. Ejecutar **Crear Carrito y Venta**
+2. Guardar el `id_venta` de la respuesta
+3. Verificar que se creen los registros en ambas tablas
+
+### **Paso 3: Consultar Ventas**
+1. Ejecutar **Listar Ventas del Usuario**
+2. Verificar que aparezca la venta creada
+3. Verificar información del usuario
+
+### **Paso 4: Ver Detalle**
+1. Ejecutar **Detalle de Venta y Carrito** con el `id_venta`
+2. Verificar todos los items del carrito
+3. Verificar cálculos de totales
+
+---
+
+## ⚠️ POSIBLES ERRORES - CARRITO Y VENTAS
+
+### **Error 1: "401 Unauthorized"**
+**Solución**: 
+- Verificar que el token esté en `access_token`
+- Hacer login nuevamente
+
+### **Error 2: "403 Forbidden - Solo los usuarios con perfil 'Cliente' pueden crear carritos y ventas"**
+**Solución**:
+- Usar un usuario con perfil "Cliente" (ID = 3)
+- Los administradores y publicadores NO pueden crear carritos
+- Crear un usuario cliente en la base de datos
+
+### **Error 3: "403 Forbidden - Los usuarios con perfil 'Publicador' no tienen acceso a consultar ventas"**
+**Solución**:
+- Los publicadores no tienen acceso a funcionalidades de ventas
+- Usar un usuario administrador o cliente para consultar ventas
+
+### **Error 4: "404 Not Found" en detalle de venta**
+**Solución**:
+- Verificar que el `id_venta` existe
+- Verificar que la venta pertenece al usuario autenticado (excepto administradores)
+
+### **Error 5: "422 Validation Error"**
+**Solución**:
+- Verificar formato del JSON en el body
+- Verificar que `id_producto` existe en la base de datos
+- Verificar que los cálculos de `subtotal` sean correctos
+
+### **Error 6: "500 Internal Server Error"**
+**Solución**:
+- Verificar que las tablas `tbl_venta` y `tbl_carrito` existen
+- Verificar conexión a la base de datos
+- Revisar logs del backend
+
+---
 
 ¡Listo para probar! 🚀
