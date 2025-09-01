@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from app.routers import auth, category, subcategory, product, cart, iva
+from app.routers import auth, category, subcategory, product, cart, iva, reports
 from app.database import engine, Base
 from config import settings
 
@@ -34,6 +34,7 @@ app.include_router(subcategory.router)
 app.include_router(product.router, prefix="/api")
 app.include_router(cart.router)
 app.include_router(iva.router, prefix="/api")
+app.include_router(reports.router, prefix="/api")
 
 
 @app.get("/")

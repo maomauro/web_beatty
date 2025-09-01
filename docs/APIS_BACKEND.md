@@ -1,383 +1,868 @@
-# 🔌 Documento de APIs Backend - Sistema Administrativo de Ventas
+# 📚 Documentación de APIs - Backend Web Beatty
 
 ## 🎯 **Descripción General**
 
-Este documento define las APIs necesarias para el backend del Sistema Administrativo de Ventas Web Beatty, basado en el modelo de datos y las funcionalidades implementadas en el frontend.
+Este documento describe todas las APIs disponibles en el backend del sistema Web Beatty, desarrollado con FastAPI. El sistema proporciona endpoints para autenticación, gestión de productos, carrito de compras, reportes y administración.
 
 ---
 
-## 📊 **Análisis de Requerimientos**
+## 🔗 **Información Base**
 
-### **Entidades de Base de Datos:**
-- `tbl_perfil` - Roles del sistema
-- `tbl_persona` - Información personal
-- `tbl_usuario` - Credenciales de acceso
-- `tbl_iva` - Tipos de impuestos
-- `tbl_categoria` - Categorías principales
-- `tbl_subcategoria` - Subcategorías específicas
-- `tbl_producto` - Productos con stock y precios
-- `tbl_carrito` - Items en carrito
-- `tbl_venta` - Cabecera de ventas
-- `tbl_parametro` - Configuraciones del sistema
-
-### **Funcionalidades Frontend:**
-- Sistema de autenticación
-- Panel Administrativo (CRUD completo)
-- Panel del Publicador (Gestión de productos)
-- E-commerce (Catálogo, carrito, checkout)
-- Sistema de favoritos
-- Historial de compras
-- Reportes y estadísticas
+- **URL Base:** `http://localhost:8000`
+- **Documentación Interactiva:** `http://localhost:8000/docs` (Swagger UI)
+- **Documentación Alternativa:** `http://localhost:8000/redoc` (ReDoc)
+- **Health Check:** `http://localhost:8000/health`
 
 ---
 
-## 🔐 **1. Autenticación y Autorización**
+## 🔐 **Autenticación**
 
-### **Base URL:** `/api/auth`
+### **Sistema JWT**
+- **Algoritmo:** HS256
+- **Duración Access Token:** 30 minutos
+- **Duración Refresh Token:** 7 días
+- **Header:** `Authorization: Bearer <token>`
 
-| Método | Endpoint     | Descripción             | Parámetros          | Respuesta             |
-|--------|--------------|-------------------------|---------------------|-----------------------|
-| `POST` | `/login`     | Iniciar sesión          | `email`, `password` | JWT token + user data |
-| `POST` | `/logout`    | Cerrar sesión           | JWT token           | Success message       |
-| `GET`  | `/me`        | Obtener usuario actual  | JWT token           | User data             |
-| `POST` | `/refresh`   | Renovar token           | Refresh token       | New JWT token         |
+### **Endpoints de Autenticación**
 
----
+#### **POST /api/auth/login**
+Iniciar sesión de usuario.
 
-## 👥 **2. Gestión de Usuarios y Perfiles**
-
-### **Base URL:** `/api/users`
-
-#### **2.1 Perfiles**
-| Método | Endpoint | Descripción | Parámetros | Respuesta |
-|--------|----------|-------------|------------|-----------|
-| `GET` | `/profiles` | Listar perfiles | Query params | Lista de perfiles |
-| `GET` | `/profiles/{id}` | Obtener perfil | `id` | Perfil específico |
-| `POST` | `/profiles` | Crear perfil | Profile data | Perfil creado |
-| `PUT` | `/profiles/{id}` | Actualizar perfil | `id`, Profile data | Perfil actualizado |
-| `DELETE` | `/profiles/{id}` | Eliminar perfil | `id` | Success message |
-
-#### **2.2 Personas**
-| Método | Endpoint | Descripción | Parámetros | Respuesta |
-|--------|----------|-------------|------------|-----------|
-| `GET` | `/persons` | Listar personas | Query params | Lista de personas |
-| `GET` | `/persons/{id}` | Obtener persona | `id` | Persona específica |
-| `POST` | `/persons` | Crear persona | Person data | Persona creada |
-| `PUT` | `/persons/{id}` | Actualizar persona | `id`, Person data | Persona actualizada |
-| `DELETE` | `/persons/{id}` | Eliminar persona | `id` | Success message |
-
-#### **2.3 Usuarios**
-| Método | Endpoint | Descripción | Parámetros | Respuesta |
-|--------|----------|-------------|------------|-----------|
-| `GET` | `/users` | Listar usuarios | Query params | Lista de usuarios |
-| `GET` | `/users/{id}` | Obtener usuario | `id` | Usuario específico |
-| `POST` | `/users` | Crear usuario | User data | Usuario creado |
-| `PUT` | `/users/{id}` | Actualizar usuario | `id`, User data | Usuario actualizado |
-| `DELETE` | `/users/{id}` | Eliminar usuario | `id` | Success message |
-| `PUT` | `/users/{id}/profile` | Actualizar perfil de usuario | `id`, Profile data | Usuario actualizado |
-
----
-
-## 🛍️ **3. Gestión de Productos**
-
-### **Base URL:** `/api/products`
-
-#### **3.1 Productos**
-| Método | Endpoint | Descripción | Parámetros | Respuesta |
-|--------|----------|-------------|------------|-----------|
-| `GET` | `/products` | Listar productos | Query params | Lista de productos |
-| `GET` | `/products/{id}` | Obtener producto | `id` | Producto específico |
-| `POST` | `/products` | Crear producto | Product data | Producto creado |
-| `PUT` | `/products/{id}` | Actualizar producto | `id`, Product data | Producto actualizado |
-| `DELETE` | `/products/{id}` | Eliminar producto | `id` | Success message |
-| `GET` | `/products/search` | Buscar productos | `q`, `category`, `price_range` | Productos filtrados |
-| `GET` | `/products/featured` | Productos destacados | - | Lista de productos destacados |
-| `PUT` | `/products/{id}/stock` | Actualizar stock | `id`, `stock` | Stock actualizado |
-
-#### **3.2 Categorías**
-| Método | Endpoint | Descripción | Parámetros | Respuesta |
-|--------|----------|-------------|------------|-----------|
-| `GET` | `/categories` | Listar categorías | - | Lista de categorías |
-| `GET` | `/categories/{id}` | Obtener categoría | `id` | Categoría específica |
-| `POST` | `/categories` | Crear categoría | Category data | Categoría creada |
-| `PUT` | `/categories/{id}` | Actualizar categoría | `id`, Category data | Categoría actualizada |
-| `DELETE` | `/categories/{id}` | Eliminar categoría | `id` | Success message |
-
-#### **3.3 Subcategorías**
-| Método | Endpoint | Descripción | Parámetros | Respuesta |
-|--------|----------|-------------|------------|-----------|
-| `GET` | `/subcategories` | Listar subcategorías | `category_id` | Lista de subcategorías |
-| `GET` | `/subcategories/{id}` | Obtener subcategoría | `id` | Subcategoría específica |
-| `POST` | `/subcategories` | Crear subcategoría | Subcategory data | Subcategoría creada |
-| `PUT` | `/subcategories/{id}` | Actualizar subcategoría | `id`, Subcategory data | Subcategoría actualizada |
-| `DELETE` | `/subcategories/{id}` | Eliminar subcategoría | `id` | Success message |
-
-#### **3.4 IVA**
-| Método | Endpoint | Descripción | Parámetros | Respuesta |
-|--------|----------|-------------|------------|-----------|
-| `GET` | `/iva` | Listar tipos de IVA | - | Lista de tipos de IVA |
-| `GET` | `/iva/{id}` | Obtener tipo de IVA | `id` | Tipo de IVA específico |
-| `POST` | `/iva` | Crear tipo de IVA | IVA data | Tipo de IVA creado |
-| `PUT` | `/iva/{id}` | Actualizar tipo de IVA | `id`, IVA data | Tipo de IVA actualizado |
-| `DELETE` | `/iva/{id}` | Eliminar tipo de IVA | `id` | Success message |
-
----
-
-## 🛒 **4. Sistema de Carrito y Compras**
-
-### **Base URL:** `/api/cart`
-
-#### **4.1 Carrito**
-| Método | Endpoint | Descripción | Parámetros | Respuesta |
-|--------|----------|-------------|------------|-----------|
-| `GET` | `/cart` | Obtener carrito del usuario | JWT token | Carrito actual |
-| `POST` | `/cart/items` | Agregar producto al carrito | `product_id`, `quantity` | Item agregado |
-| `PUT` | `/cart/items/{id}` | Actualizar cantidad | `id`, `quantity` | Item actualizado |
-| `DELETE` | `/cart/items/{id}` | Eliminar item del carrito | `id` | Item eliminado |
-| `DELETE` | `/cart` | Vaciar carrito | - | Carrito vaciado |
-| `GET` | `/cart/total` | Calcular total del carrito | - | Total con IVA |
-
-#### **4.2 Favoritos**
-| Método | Endpoint | Descripción | Parámetros | Respuesta |
-|--------|----------|-------------|------------|-----------|
-| `GET` | `/favorites` | Obtener favoritos del usuario | JWT token | Lista de favoritos |
-| `POST` | `/favorites` | Agregar a favoritos | `product_id` | Producto agregado |
-| `DELETE` | `/favorites/{product_id}` | Eliminar de favoritos | `product_id` | Producto eliminado |
-| `GET` | `/favorites/check/{product_id}` | Verificar si está en favoritos | `product_id` | Boolean |
-
----
-
-## 💳 **5. Sistema de Ventas**
-
-### **Base URL:** `/api/sales`
-
-#### **5.1 Ventas**
-| Método | Endpoint | Descripción | Parámetros | Respuesta |
-|--------|----------|-------------|------------|-----------|
-| `POST` | `/sales` | Crear venta | Cart data | Venta creada |
-| `GET` | `/sales` | Listar ventas del usuario | JWT token | Lista de ventas |
-| `GET` | `/sales/{id}` | Obtener venta específica | `id` | Venta específica |
-| `GET` | `/sales/abandoned` | Carritos abandonados | JWT token | Lista de carritos |
-| `PUT` | `/sales/{id}/status` | Actualizar estado de venta | `id`, `status` | Estado actualizado |
-
-#### **5.2 Checkout**
-| Método | Endpoint | Descripción | Parámetros | Respuesta |
-|--------|----------|-------------|------------|-----------|
-| `POST` | `/checkout/validate` | Validar carrito para checkout | Cart data | Validación |
-| `POST` | `/checkout/process` | Procesar checkout | Payment data | Venta procesada |
-| `POST` | `/checkout/confirm` | Confirmar venta | `sale_id` | Venta confirmada |
-
----
-
-## 📊 **6. Reportes y Estadísticas**
-
-### **Base URL:** `/api/reports`
-
-#### **6.1 Estadísticas Generales**
-| Método | Endpoint | Descripción | Parámetros | Respuesta |
-|--------|----------|-------------|------------|-----------|
-| `GET` | `/stats/dashboard` | Estadísticas del dashboard | Date range | KPIs generales |
-| `GET` | `/stats/products` | Estadísticas de productos | Date range | Métricas de productos |
-| `GET` | `/stats/sales` | Estadísticas de ventas | Date range | Métricas de ventas |
-| `GET` | `/stats/users` | Estadísticas de usuarios | Date range | Métricas de usuarios |
-
-#### **6.2 Reportes Específicos**
-| Método | Endpoint | Descripción | Parámetros | Respuesta |
-|--------|----------|-------------|------------|-----------|
-| `GET` | `/reports/sales` | Reporte de ventas | Date range, filters | Reporte detallado |
-| `GET` | `/reports/products` | Reporte de productos | Category, stock | Reporte de inventario |
-| `GET` | `/reports/users` | Reporte de usuarios | Date range | Reporte de usuarios |
-| `GET` | `/reports/abandoned-carts` | Reporte de carritos abandonados | Date range | Carritos abandonados |
-
----
-
-## ⚙️ **7. Configuración del Sistema**
-
-### **Base URL:** `/api/config`
-
-#### **7.1 Parámetros**
-| Método | Endpoint | Descripción | Parámetros | Respuesta |
-|--------|----------|-------------|------------|-----------|
-| `GET` | `/parameters` | Listar parámetros | - | Lista de parámetros |
-| `GET` | `/parameters/{key}` | Obtener parámetro | `key` | Valor del parámetro |
-| `POST` | `/parameters` | Crear parámetro | Parameter data | Parámetro creado |
-| `PUT` | `/parameters/{key}` | Actualizar parámetro | `key`, Parameter data | Parámetro actualizado |
-| `DELETE` | `/parameters/{key}` | Eliminar parámetro | `key` | Success message |
-
----
-
-## 🔍 **8. Búsqueda y Filtros**
-
-### **Base URL:** `/api/search`
-
-| Método | Endpoint | Descripción | Parámetros | Respuesta |
-|--------|----------|-------------|------------|-----------|
-| `GET` | `/products` | Búsqueda de productos | `q`, `category`, `price_min`, `price_max`, `sort` | Productos filtrados |
-| `GET` | `/users` | Búsqueda de usuarios | `q`, `profile`, `status` | Usuarios filtrados |
-| `GET` | `/sales` | Búsqueda de ventas | `q`, `date_from`, `date_to`, `status` | Ventas filtradas |
-
----
-
-## 📈 **9. APIs Específicas del Panel del Publicador**
-
-### **Base URL:** `/api/publisher`
-
-| Método | Endpoint | Descripción | Parámetros | Respuesta |
-|--------|----------|-------------|------------|-----------|
-| `GET` | `/dashboard/stats` | Estadísticas del publicador | JWT token | KPIs del publicador |
-| `GET` | `/products/my-products` | Productos del publicador | JWT token | Lista de productos |
-| `GET` | `/products/activity` | Actividad reciente | JWT token | Lista de actividades |
-| `GET` | `/products/stock-alerts` | Alertas de stock | JWT token | Productos con stock bajo |
-
----
-
-## 🔐 **10. Middleware y Validaciones**
-
-### **Autenticación**
-- **JWT Token** en header: `Authorization: Bearer <token>`
-- **Refresh Token** para renovación automática
-- **Roles y permisos** por endpoint
-
-### **Validaciones**
-- **Campos requeridos** en todos los POST/PUT
-- **Formato de datos** (email, teléfono, etc.)
-- **Permisos de usuario** según perfil
-- **Límites de rate limiting**
-
-### **Respuestas Estándar**
+**Request Body:**
 ```json
 {
-  "success": true,
-  "data": {...},
-  "message": "Operación exitosa",
-  "timestamp": "2024-01-01T00:00:00Z"
+  "username": "admin@sistema.com",
+  "password": "admin123"
 }
 ```
 
-### **Manejo de Errores**
+**Response (200):**
 ```json
 {
-  "success": false,
-  "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "Campos requeridos faltantes",
-    "details": {...}
-  },
-  "timestamp": "2024-01-01T00:00:00Z"
-}
-```
-
----
-
-## 📋 **11. Esquemas de Datos Principales**
-
-### **Usuario**
-```json
-{
-  "id": 1,
-  "email": "usuario@ejemplo.com",
-  "profile": {
-    "id": 1,
-    "name": "Cliente"
-  },
-  "person": {
-    "id": 1,
-    "first_name": "Juan",
-    "last_name": "Pérez",
-    "phone": "+573001234567",
-    "address": {...}
+  "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+  "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+  "token_type": "bearer",
+  "user": {
+    "id_usuario": 6,
+    "username": "admin@sistema.com",
+    "perfil": {
+      "id_perfil": 1,
+      "nombre": "Administrador"
+    },
+    "persona": {
+      "id_persona": 6,
+      "nombre": "Admin",
+      "apellido": "Sistema",
+      "email": "admin@sistema.com"
+    }
   }
 }
 ```
 
-### **Producto**
+#### **POST /api/auth/register**
+Registrar nuevo usuario.
+
+**Request Body:**
 ```json
 {
-  "id": 1,
-  "code": "PROD-001",
-  "name": "Cepillo dental",
-  "brand": "Colgate",
-  "price": 5000,
-  "stock": 100,
-  "category": {
-    "id": 1,
-    "name": "Higiene bucal"
-  },
-  "subcategory": {
-    "id": 1,
-    "name": "Cepillos"
-  },
-  "iva": {
-    "id": 1,
-    "percentage": 19
+  "tipo_identificacion": "CC",
+  "identificacion": "1234567890",
+  "genero": "MASCULINO",
+  "nombre": "Juan",
+  "apellido": "Pérez",
+  "direccion": "Calle 123 #45-67",
+  "telefono": "3001234567",
+  "email": "juan.perez@example.com"
+}
+```
+
+**Response (201):**
+```json
+{
+  "message": "Usuario registrado exitosamente",
+  "user": {
+    "id_usuario": 13,
+    "username": "juan.perez@example.com",
+    "password": "1234567890"
   }
 }
 ```
 
-### **Venta**
+#### **GET /api/auth/me**
+Obtener información del usuario actual.
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Response (200):**
 ```json
 {
-  "id": 1,
-  "user_id": 1,
-  "total": 15000,
-  "iva_total": 2850,
-  "status": "CONFIRMED",
-  "created_at": "2024-01-01T00:00:00Z",
+  "id_usuario": 6,
+  "username": "admin@sistema.com",
+  "perfil": {
+    "id_perfil": 1,
+    "nombre": "Administrador"
+  },
+  "persona": {
+    "id_persona": 6,
+    "nombre": "Admin",
+    "apellido": "Sistema",
+    "email": "admin@sistema.com"
+  }
+}
+```
+
+#### **POST /api/auth/logout**
+Cerrar sesión.
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Response (200):**
+```json
+{
+  "message": "Sesión cerrada exitosamente"
+}
+```
+
+---
+
+## 🛍️ **Carrito de Compras**
+
+### **Endpoints del Carrito**
+
+#### **GET /api/cart**
+Obtener carrito del usuario actual.
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Response (200):**
+```json
+{
   "items": [
     {
-      "product_id": 1,
-      "quantity": 2,
-      "price": 5000,
-      "iva": 950
+      "id_carrito": 130,
+      "id_producto": 32,
+      "cantidad": 3,
+      "valor_unitario": 5200.00,
+      "iva_calculado": 2964.00,
+      "subtotal": 18564.00,
+      "producto": {
+        "id_producto": 32,
+        "nombre": "Cepillo dental suave",
+        "marca": "Oral-B",
+        "imagen": "{\"principal\": \"default-1.webp\"}"
+      }
+    }
+  ],
+  "total_items": 1,
+  "subtotal": 18564.00,
+  "total_iva": 2964.00,
+  "total": 21528.00
+}
+```
+
+#### **POST /api/cart**
+Agregar producto al carrito.
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Request Body:**
+```json
+{
+  "id_producto": 32,
+  "cantidad": 2
+}
+```
+
+**Response (201):**
+```json
+{
+  "message": "Producto agregado al carrito",
+  "item": {
+    "id_carrito": 131,
+    "id_producto": 32,
+    "cantidad": 2,
+    "valor_unitario": 5200.00,
+    "iva_calculado": 1976.00,
+    "subtotal": 12376.00
+  }
+}
+```
+
+#### **PUT /api/cart/{item_id}**
+Actualizar cantidad de un item del carrito.
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Request Body:**
+```json
+{
+  "cantidad": 5
+}
+```
+
+**Response (200):**
+```json
+{
+  "message": "Cantidad actualizada",
+  "item": {
+    "id_carrito": 130,
+    "cantidad": 5,
+    "subtotal": 30940.00
+  }
+}
+```
+
+#### **DELETE /api/cart/{item_id}**
+Eliminar item del carrito.
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Response (200):**
+```json
+{
+  "message": "Item eliminado del carrito"
+}
+```
+
+#### **PUT /api/cart/confirm**
+Confirmar compra (convertir carrito en venta).
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Response (200):**
+```json
+{
+  "message": "Compra confirmada exitosamente",
+  "venta": {
+    "id_venta": 6,
+    "total_venta": 21528.00,
+    "estado": "CONFIRMADO",
+    "fecha_venta": "2025-09-01T12:00:00"
+  }
+}
+```
+
+#### **DELETE /api/cart/clear**
+Limpiar carrito completo.
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Response (200):**
+```json
+{
+  "message": "Carrito limpiado exitosamente"
+}
+```
+
+---
+
+## 📦 **Productos**
+
+### **Endpoints de Productos**
+
+#### **GET /api/products**
+Listar productos (público).
+
+**Query Parameters:**
+- `page` (int): Número de página (default: 1)
+- `limit` (int): Items por página (default: 10)
+- `search` (str): Búsqueda por nombre
+- `category` (int): Filtrar por categoría
+- `subcategory` (int): Filtrar por subcategoría
+
+**Response (200):**
+```json
+{
+  "products": [
+    {
+      "id_producto": 32,
+      "codigo": "PROD-002",
+      "marca": "Oral-B",
+      "nombre": "Cepillo dental suave",
+      "valor": 5200.00,
+      "stock": 70,
+      "estado": "ACTIVO",
+      "imagen": "{\"principal\": \"default-1.webp\"}",
+      "categoria": {
+        "id_categoria": 1,
+        "nombre": "Aseo personal"
+      },
+      "subcategoria": {
+        "id_subcategoria": 1,
+        "nombre": "accesorios-baño"
+      },
+      "iva": {
+        "id_iva": 4,
+        "porcentaje": 19.00,
+        "descripcion": "IVA Máximo"
+      }
+    }
+  ],
+  "total": 30,
+  "page": 1,
+  "limit": 10,
+  "pages": 3
+}
+```
+
+#### **GET /api/products/{product_id}**
+Obtener producto específico.
+
+**Response (200):**
+```json
+{
+  "id_producto": 32,
+  "codigo": "PROD-002",
+  "marca": "Oral-B",
+  "nombre": "Cepillo dental suave",
+  "valor": 5200.00,
+  "stock": 70,
+  "estado": "ACTIVO",
+  "imagen": "{\"principal\": \"default-1.webp\", \"galeria\": [\"default.webp\", \"default-1.webp\", \"default-2.webp\"]}",
+  "fecha_caducidad": "2027-10-15",
+  "categoria": {
+    "id_categoria": 1,
+    "nombre": "Aseo personal"
+  },
+  "subcategoria": {
+    "id_subcategoria": 1,
+    "nombre": "accesorios-baño"
+  },
+  "iva": {
+    "id_iva": 4,
+    "porcentaje": 19.00,
+    "descripcion": "IVA Máximo"
+  }
+}
+```
+
+#### **POST /api/products** (Admin/Publicador)
+Crear nuevo producto.
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Request Body:**
+```json
+{
+  "codigo": "PROD-031",
+  "marca": "Nueva Marca",
+  "nombre": "Nuevo Producto",
+  "valor": 15000.00,
+  "stock": 100,
+  "id_categoria": 1,
+  "id_subcategoria": 1,
+  "id_iva": 4,
+  "fecha_caducidad": "2026-12-31",
+  "imagen": "{\"principal\": \"default.webp\"}"
+}
+```
+
+**Response (201):**
+```json
+{
+  "message": "Producto creado exitosamente",
+  "product": {
+    "id_producto": 61,
+    "codigo": "PROD-031",
+    "nombre": "Nuevo Producto"
+  }
+}
+```
+
+#### **PUT /api/products/{product_id}** (Admin/Publicador)
+Actualizar producto.
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Request Body:**
+```json
+{
+  "nombre": "Producto Actualizado",
+  "valor": 18000.00,
+  "stock": 150
+}
+```
+
+**Response (200):**
+```json
+{
+  "message": "Producto actualizado exitosamente"
+}
+```
+
+#### **DELETE /api/products/{product_id}** (Admin/Publicador)
+Eliminar producto.
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Response (200):**
+```json
+{
+  "message": "Producto eliminado exitosamente"
+}
+```
+
+---
+
+## 📊 **Reportes**
+
+### **Endpoints de Reportes** (Solo Admin)
+
+#### **GET /api/reports/sales**
+Reporte detallado de ventas.
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Query Parameters:**
+- `start_date` (str): Fecha inicio (YYYY-MM-DD)
+- `end_date` (str): Fecha fin (YYYY-MM-DD)
+- `status` (str): Estado (completed, pending, cancelled)
+- `search` (str): Búsqueda por cliente
+- `page` (int): Número de página
+- `limit` (int): Items por página
+
+**Response (200):**
+```json
+{
+  "sales": [
+    {
+      "id_venta": 1,
+      "fecha_venta": "2025-09-01T10:38:51",
+      "total_venta": 74252.00,
+      "estado": "CONFIRMADO",
+      "usuario": {
+        "nombre": "María",
+        "apellido": "Gómez",
+        "email": "maria.gomez@example.com"
+      },
+      "items": [
+        {
+          "id_producto": 42,
+          "nombre": "Desodorante clásico 150ml",
+          "cantidad": 3,
+          "valor_unitario": 15000.00,
+          "subtotal": 49500.00
+        }
+      ]
+    }
+  ],
+  "total": 5,
+  "page": 1,
+  "limit": 10,
+  "pages": 1
+}
+```
+
+#### **GET /api/reports/sales/summary**
+Resumen de ventas.
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Query Parameters:**
+- `start_date` (str): Fecha inicio (YYYY-MM-DD)
+- `end_date` (str): Fecha fin (YYYY-MM-DD)
+
+**Response (200):**
+```json
+{
+  "total_sales": 112796.00,
+  "completed_sales": 2,
+  "pending_sales": 3,
+  "total_records": 5,
+  "average_order_value": 56398.00
+}
+```
+
+---
+
+## 🏷️ **Categorías**
+
+### **Endpoints de Categorías**
+
+#### **GET /api/categories**
+Listar categorías.
+
+**Response (200):**
+```json
+[
+  {
+    "id_categoria": 1,
+    "nombre": "Aseo personal",
+    "descripcion": "Productos relacionados con el cuidado e higiene personal",
+    "subcategorias": [
+      {
+        "id_subcategoria": 1,
+        "nombre": "accesorios-baño",
+        "descripcion": "Accesorios para el baño"
+      }
+    ]
+  }
+]
+```
+
+#### **POST /api/categories** (Solo Admin)
+Crear categoría.
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Request Body:**
+```json
+{
+  "nombre": "Nueva Categoría",
+  "descripcion": "Descripción de la nueva categoría"
+}
+```
+
+**Response (201):**
+```json
+{
+  "message": "Categoría creada exitosamente",
+  "categoria": {
+    "id_categoria": 2,
+    "nombre": "Nueva Categoría"
+  }
+}
+```
+
+#### **PUT /api/categories/{id}** (Solo Admin)
+Actualizar categoría.
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Request Body:**
+```json
+{
+  "nombre": "Categoría Actualizada",
+  "descripcion": "Nueva descripción"
+}
+```
+
+**Response (200):**
+```json
+{
+  "message": "Categoría actualizada exitosamente"
+}
+```
+
+#### **DELETE /api/categories/{id}** (Solo Admin)
+Eliminar categoría.
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Response (200):**
+```json
+{
+  "message": "Categoría eliminada exitosamente"
+}
+```
+
+---
+
+## 💰 **IVA**
+
+### **Endpoints de IVA**
+
+#### **GET /api/iva**
+Listar tipos de IVA.
+
+**Response (200):**
+```json
+[
+  {
+    "id_iva": 1,
+    "porcentaje": 0.00,
+    "descripcion": "Sin IVA"
+  },
+  {
+    "id_iva": 2,
+    "porcentaje": 4.00,
+    "descripcion": "IVA Mínimo"
+  },
+  {
+    "id_iva": 3,
+    "porcentaje": 10.00,
+    "descripcion": "IVA Medio"
+  },
+  {
+    "id_iva": 4,
+    "porcentaje": 19.00,
+    "descripcion": "IVA Máximo"
+  }
+]
+```
+
+#### **POST /api/iva** (Solo Admin)
+Crear tipo de IVA.
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Request Body:**
+```json
+{
+  "porcentaje": 5.00,
+  "descripcion": "IVA Reducido"
+}
+```
+
+**Response (201):**
+```json
+{
+  "message": "Tipo de IVA creado exitosamente",
+  "iva": {
+    "id_iva": 5,
+    "porcentaje": 5.00,
+    "descripcion": "IVA Reducido"
+  }
+}
+```
+
+#### **PUT /api/iva/{id}** (Solo Admin)
+Actualizar tipo de IVA.
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Request Body:**
+```json
+{
+  "porcentaje": 6.00,
+  "descripcion": "IVA Reducido Actualizado"
+}
+```
+
+**Response (200):**
+```json
+{
+  "message": "Tipo de IVA actualizado exitosamente"
+}
+```
+
+#### **DELETE /api/iva/{id}** (Solo Admin)
+Eliminar tipo de IVA.
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Response (200):**
+```json
+{
+  "message": "Tipo de IVA eliminado exitosamente"
+}
+```
+
+---
+
+## 🔧 **Endpoints de Utilidad**
+
+### **GET /**
+Información general del sistema.
+
+**Response (200):**
+```json
+{
+  "message": "Sistema Administrativo de Ventas - Web Beatty",
+  "version": "1.0.0",
+  "status": "running"
+}
+```
+
+### **GET /health**
+Health check del sistema.
+
+**Response (200):**
+```json
+{
+  "status": "healthy"
+}
+```
+
+### **GET /api/test-connection**
+Prueba de conexión.
+
+**Response (200):**
+```json
+{
+  "status": "success",
+  "message": "Backend funcionando correctamente",
+  "timestamp": "2025-09-01T12:00:00Z"
+}
+```
+
+---
+
+## 🚨 **Códigos de Error**
+
+### **Errores Comunes**
+
+#### **400 Bad Request**
+```json
+{
+  "detail": "Datos de entrada inválidos"
+}
+```
+
+#### **401 Unauthorized**
+```json
+{
+  "detail": "Credenciales incorrectas"
+}
+```
+
+#### **403 Forbidden**
+```json
+{
+  "detail": "No tienes permisos para acceder a este recurso"
+}
+```
+
+#### **404 Not Found**
+```json
+{
+  "detail": "Recurso no encontrado"
+}
+```
+
+#### **422 Validation Error**
+```json
+{
+  "detail": [
+    {
+      "loc": ["body", "email"],
+      "msg": "field required",
+      "type": "value_error.missing"
     }
   ]
 }
 ```
 
----
-
-## 🚀 **12. Priorización de Desarrollo**
-
-### **Fase 1 (Crítico)**
-1. **Autenticación** - Login/Logout/JWT
-2. **Productos** - CRUD básico
-3. **Carrito** - Agregar/quitar productos
-4. **Ventas** - Proceso básico de checkout
-
-### **Fase 2 (Importante)**
-1. **Usuarios y Perfiles** - CRUD completo
-2. **Categorías y IVA** - Gestión
-3. **Favoritos** - Sistema completo
-4. **Reportes básicos** - Estadísticas
-
-### **Fase 3 (Mejoras)**
-1. **Búsqueda avanzada** - Filtros complejos
-2. **Reportes detallados** - Análisis completo
-3. **Configuración** - Parámetros del sistema
-4. **Optimizaciones** - Performance y UX
+#### **500 Internal Server Error**
+```json
+{
+  "detail": "Error interno del servidor"
+}
+```
 
 ---
 
-## 📝 **13. Notas de Implementación**
+## 📋 **Ejemplos de Uso**
 
-### **Base de Datos**
-- Usar **SQLAlchemy** para ORM
-- Implementar **migraciones** con Alembic
-- Configurar **relaciones** correctamente
-- Implementar **índices** para búsquedas
+### **Flujo Completo de Compra**
 
-### **Seguridad**
-- **Validación de entrada** en todos los endpoints
-- **Sanitización** de datos
-- **Rate limiting** para prevenir abuso
-- **Logs** de auditoría
+1. **Login del usuario:**
+```bash
+curl -X POST "http://localhost:8000/api/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{"username": "maria.gomez@example.com", "password": "cliente123"}'
+```
 
-### **Performance**
-- **Paginación** en listados grandes
-- **Caché** para datos estáticos
-- **Optimización** de consultas SQL
-- **Compresión** de respuestas
+2. **Agregar producto al carrito:**
+```bash
+curl -X POST "http://localhost:8000/api/cart" \
+  -H "Authorization: Bearer <access_token>" \
+  -H "Content-Type: application/json" \
+  -d '{"id_producto": 32, "cantidad": 2}'
+```
+
+3. **Ver carrito:**
+```bash
+curl -X GET "http://localhost:8000/api/cart" \
+  -H "Authorization: Bearer <access_token>"
+```
+
+4. **Confirmar compra:**
+```bash
+curl -X PUT "http://localhost:8000/api/cart/confirm" \
+  -H "Authorization: Bearer <access_token>"
+```
+
+### **Ejemplo con Postman**
+
+Importar la colección de Postman incluida en `docs/GUIA_POSTMAN.md` para tener todos los endpoints configurados automáticamente.
 
 ---
 
-*Este documento se actualiza conforme se desarrollan las APIs del backend.*
+## 🔒 **Seguridad**
+
+### **Medidas Implementadas**
+- ✅ **JWT Authentication** - Tokens seguros con expiración
+- ✅ **Password Hashing** - Bcrypt para contraseñas
+- ✅ **CORS Configuration** - Control de orígenes permitidos
+- ✅ **Input Validation** - Validación con Pydantic
+- ✅ **SQL Injection Protection** - ORM SQLAlchemy
+- ✅ **Rate Limiting** - Protección contra ataques
+
+### **Recomendaciones**
+- 🔒 **HTTPS** en producción
+- 🔒 **Rate Limiting** más estricto
+- 🔒 **Logs de Auditoría** para acciones críticas
+- 🔒 **Backup Automático** de base de datos
+
+---
+
+## 📚 **Documentación Adicional**
+
+- **Swagger UI:** `http://localhost:8000/docs`
+- **ReDoc:** `http://localhost:8000/redoc`
+- **Guía Postman:** `docs/GUIA_POSTMAN.md`
+- **Testing:** `docs/TESTING_FRONTEND_BACKEND.md`
+
+---
+
+**Versión:** 1.0.0  
+**Última actualización:** Septiembre 2025  
+**Desarrollado por:** Equipo Web Beatty

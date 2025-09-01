@@ -1,18 +1,21 @@
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { UserData } from '../services/authService';
+import { LoginData, RegisterData } from '../services/authService';
 
 // Tipo para el contexto de autenticación
 interface AuthContextType {
-  user: UserData | undefined;
+  user: any;
   isAuthenticated: boolean;
   isLoadingUser: boolean;
   userError: any;
   isLoggingIn: boolean;
+  isRegistering: boolean;
   isLoggingOut: boolean;
   loginError: any;
+  registerError: any;
   logoutError: any;
-  login: (credentials: { email: string; password: string }) => Promise<{ success: boolean; error?: string }>;
+  login: (credentials: LoginData) => Promise<{ success: boolean; error?: string }>;
+  register: (registerData: RegisterData) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<{ success: boolean; error?: string }>;
   clearAuth: () => void;
   refetchUser: () => void;
